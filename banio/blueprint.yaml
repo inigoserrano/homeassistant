@@ -1,10 +1,10 @@
 blueprint:
-  name: LPB - Motion activated light with only one entrance
+  name: LPB - Occupancy and door activated light with only one entrance
   description: Turn light on based on detected motion and detected door open in an area with only one entrance tha is controlled with the door sensor.
   domain: automation
   input:
-    motion_sensor:
-      name: Motion Sensor
+    occupancy_sensor:
+      name: Occupancy Sensor
       description: This sensor will be synchronized with the light.
       selector:
         entity:
@@ -80,13 +80,15 @@ trigger:
   entity_id: !input 'area_mode'
 action:
   - variables:
+      occupancy_sensor_id: !input 'occupancy_sensor'
       door_entity_id: !input 'door_sensor'
-      door_open: '{{ trigger.entity_id == ''binary_sensor.lumi_lumi_sensor_magnet_aq2_9cb7ce03_on_off'' and trigger.to_state.state == ''on'' }}'
-      door_closed: '{{ trigger.entity_id == ''binary_sensor.lumi_lumi_sensor_magnet_aq2_9cb7ce03_on_off'' and trigger.to_state.state == ''off'' }}'
+      door_open: '{{ trigger.entity_id == occupancy_sensor_id and trigger.to_state.state == ''on'' }}'
+      door_closed: '{{ trigger.entity_id == occupancy_sensor_id and trigger.to_state.state == ''off'' }}'
+      area_input_select: !input 'area_mode'
   - choose:
     - conditions: 
       - '{{ door_open }}'
-      - '{{ is_state(''input_select.modo_aseo'', ''Vacio y cerrada'') }}'
+      - '{{ is_state(area_input_select, ''Vacio y cerrada'') }}'
       sequence:
       - service: input_select.select_option
         data:
@@ -94,7 +96,7 @@ action:
           option: Posible entrada
     - conditions: 
       - '{{ door_open }}'
-      - '{{ is_state(''input_select.modo_aseo'', ''Ocupado y cerrada'') }}'
+      - '{{ is_state(area_input_select, ''Ocupado y cerrada'') }}'
       sequence:
       - service: input_select.select_option
         data:
@@ -102,7 +104,7 @@ action:
           option: Posible salida 2
     - conditions: 
       - '{{ door_closed }}'
-      - '{{ is_state(''input_select.modo_aseo'', ''Posible entrada'') }}'
+      - '{{ is_state(area_input_select, ''Posible entrada'') }}'
       sequence:
       - service: input_select.select_option
         data:
@@ -110,7 +112,7 @@ action:
           option: Vacio y cerrada
     - conditions: 
       - '{{ door_closed }}'
-      - '{{ is_state(''input_select.modo_aseo'', ''Vacio y abierta'') }}'        
+      - '{{ is_state(area_input_select, ''Vacio y abierta'') }}'        
       sequence:
       - service: input_select.select_option
         data:
@@ -118,7 +120,7 @@ action:
           option: Vacio y cerrada
     - conditions: 
       - '{{ door_closed }}'
-      - '{{ is_state(''input_select.modo_aseo'', ''Ocupado y abierta'') }}'            
+      - '{{ is_state(area_input_select, ''Ocupado y abierta'') }}'            
       sequence:
       - service: input_select.select_option
         data:
@@ -126,7 +128,7 @@ action:
           option: Posible salida 1
     - conditions: 
       - '{{ door_closed }}'
-      - '{{ is_state(''input_select.modo_aseo'', ''Posible salida 2'') }}'        
+      - '{{ is_state(area_input_select, ''Posible salida 2'') }}'        
       sequence:
       - service: input_select.select_option
         data:
@@ -134,8 +136,8 @@ action:
           option: Vacio y cerrada
     - conditions: 
       - '{{ trigger.event.data.ocupado == true }}'
-      - '{{ is_state(''input_select.modo_aseo'', ''Vacio y cerrada'') or is_state(''input_select.modo_aseo'', ''Posible salida 1'') }}'           
-      - '{{ is_state(''input_select.modo_aseo'', trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == ''input_select.modo_aseo'' }}'      
+      - '{{ is_state(area_input_select, ''Vacio y cerrada'') or is_state(area_input_select, ''Posible salida 1'') }}'           
+      - '{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}'      
       sequence:
       - service: input_select.select_option
         data:
@@ -143,8 +145,8 @@ action:
           option: Ocupado y cerrada
     - conditions: 
       - '{{ trigger.event.data.ocupado == true }}'
-      - '{{ is_state(''input_select.modo_aseo'', ''Posible entrada'') or is_state(''input_select.modo_aseo'', ''Vacio y abierta'') or is_state(''input_select.modo_aseo'', ''Ocupado y abierta'') or is_state(''input_select.modo_aseo'', ''Posible salida 2'') }}'
-      - '{{ is_state(''input_select.modo_aseo'', trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == ''input_select.modo_aseo'' }}'      
+      - '{{ is_state(area_input_select, ''Posible entrada'') or is_state(area_input_select, ''Vacio y abierta'') or is_state(area_input_select, ''Ocupado y abierta'') or is_state(area_input_select, ''Posible salida 2'') }}'
+      - '{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}'      
       sequence:
       - service: input_select.select_option
         data:
@@ -152,8 +154,8 @@ action:
           option: Ocupado y abierta
     - conditions: 
       - '{{ trigger.event.data.ocupado == false }}'
-      - '{{ is_state(''input_select.modo_aseo'', ''Posible entrada'') or is_state(''input_select.modo_aseo'', ''Ocupado y abierta'') or is_state(''input_select.modo_aseo'', ''Posible salida 2'') }}'
-      - '{{ is_state(''input_select.modo_aseo'', trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == ''input_select.modo_aseo'' }}'
+      - '{{ is_state(area_input_select, ''Posible entrada'') or is_state(area_input_select, ''Ocupado y abierta'') or is_state(area_input_select, ''Posible salida 2'') }}'
+      - '{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}'
       sequence:
       - service: input_select.select_option
         data:
@@ -161,8 +163,8 @@ action:
           option: Vacio y abierta
     - conditions: 
       - '{{ trigger.event.data.ocupado == false }}'
-      - '{{ is_state(''input_select.modo_aseo'', ''Posible salida 1'') }}'
-      - '{{ is_state(''input_select.modo_aseo'', trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == ''input_select.modo_aseo'' }}'
+      - '{{ is_state(area_input_select, ''Posible salida 1'') }}'
+      - '{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}'
       sequence:
       - service: input_select.select_option
         data:
@@ -176,7 +178,7 @@ action:
       - service: light.turn_off
         data:
           entity_id: !input target_light
-      - wait_template: '{{ is_state(''binary_sensor.lumi_lumi_sensor_motion_aq2_49738205_ias_zone'', ''on'') }}'
+      - wait_template: '{{ is_state(occupancy_sensor_id, ''on'') }}'
         timeout: 00:00:15
       - choose:
         - conditions:
@@ -216,8 +218,7 @@ action:
             entity_id: !input target_light
             brightness_pct: !input brightness_night
             kelvin: !input kelvin_night
-      - wait_template: '{{ is_state(''binary_sensor.lumi_lumi_sensor_motion_aq2_49738205_ias_zone'',
-          ''on'') }}'
+      - wait_template: '{{ is_state(occupancy_sensor_id, ''on'') }}'
         timeout: 00:00:15
       - choose:
         - conditions:
@@ -243,7 +244,7 @@ action:
       - service: light.turn_off
         data:
           entity_id: !input target_light
-      - wait_template: '{{ is_state(''binary_sensor.lumi_lumi_sensor_motion_aq2_49738205_ias_zone'', ''on'') }}'
+      - wait_template: '{{ is_state(occupancy_sensor_id, ''on'') }}'
         timeout: 00:00:15
       - choose:
         - conditions:
@@ -271,7 +272,7 @@ action:
           entity_id: !input target_light
       - wait_for_trigger:
         - platform: state
-          entity_id: binary_sensor.lumi_lumi_sensor_motion_aq2_49738205_ias_zone
+          entity_id: !input occupancy_sensor
           to: 'off'
           for: 00:02:00
         timeout:
@@ -300,8 +301,7 @@ action:
       - service: light.turn_on
         data:
           entity_id: !input target_light
-      - wait_template: '{{ is_state(''binary_sensor.lumi_lumi_sensor_motion_aq2_49738205_ias_zone'',
-          ''on'') }}'
+      - wait_template: '{{ is_state(occupancy_sensor_id, ''on'') }}'
         timeout: 00:00:15
       - choose:
         - conditions:
@@ -327,8 +327,7 @@ action:
       - service: light.turn_on
         data:
           entity_id: !input target_light
-      - wait_template: '{{ is_state(''binary_sensor.lumi_lumi_sensor_motion_aq2_49738205_ias_zone'',
-          ''on'') }}'
+      - wait_template: '{{ is_state(occupancy_sensor_id, ''on'') }}'
         timeout: 00:00:15
       - choose:
         - conditions:
@@ -354,8 +353,7 @@ action:
       - service: light.turn_on
         data:
           entity_id: !input target_light
-      - wait_template: '{{ is_state(''binary_sensor.lumi_lumi_sensor_motion_aq2_49738205_ias_zone'',
-          ''on'') }}'
+      - wait_template: '{{ is_state(occupancy_sensor_id, ''on'') }}'
         timeout: 00:00:15
       - choose:
         - conditions:
