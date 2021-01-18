@@ -21,12 +21,12 @@ blueprint:
       name: Lights
       description: The lights to keep in sync.
       selector:
-          entity:
-            domain: light
+        entity:
+          domain: light
     area_mode:
       name: Area mode
       selector:
-        entity: 
+        entity:
           domain: input_select
     brightness_day:
       name: Brightness of the light during the day
@@ -38,7 +38,7 @@ blueprint:
           max: 100.0
           mode: slider
           step: 1.0
-          unit_of_measurement: '%'
+          unit_of_measurement: "%"
     kelvin_day:
       name: Kelvin temperature of the light during the day
       description: Kelvin temperature of the light when turning on in the day, the sun is 'above_horizon'.
@@ -59,7 +59,7 @@ blueprint:
           max: 100.0
           mode: slider
           step: 1.0
-          unit_of_measurement: '%'
+          unit_of_measurement: "%"
     kelvin_night:
       name: Kelvin temperature of the light during the night
       description: Kelvin temperature of the light when turning on in the night, the sun is 'below_horizon'.
@@ -72,302 +72,273 @@ blueprint:
           step: 100.0
 mode: parallel
 trigger:
-- platform: state
-  entity_id: !input 'door_sensor'
-- platform: event
-  event_type: evento_cambio_modo_aseo
-- platform: state
-  entity_id: !input 'area_mode'
+  - platform: state
+    entity_id: !input "door_sensor"
+  - platform: event
+    event_type: less_push_buttons
+  - platform: state
+    entity_id: !input "area_mode"
 action:
   - variables:
-      occupancy_sensor_id: !input 'occupancy_sensor'
-      door_entity_id: !input 'door_sensor'
-      door_open: '{{ trigger.entity_id == occupancy_sensor_id and trigger.to_state.state == ''on'' }}'
-      door_closed: '{{ trigger.entity_id == occupancy_sensor_id and trigger.to_state.state == ''off'' }}'
-      area_input_select: !input 'area_mode'
+      occupancy_sensor_id: !input "occupancy_sensor"
+      door_entity_id: !input "door_sensor"
+      door_open: "{{ trigger.entity_id == door_entity_id and trigger.to_state.state == 'on' }}"
+      door_closed: "{{ trigger.entity_id == door_entity_id and trigger.to_state.state == 'off' }}"
+      area_input_select: !input "area_mode"
   - choose:
-    - conditions: 
-      - '{{ door_open }}'
-      - '{{ is_state(area_input_select, ''Vacio y cerrada'') }}'
-      sequence:
-      - service: input_select.select_option
-        data:
-          entity_id: !input 'area_mode'
-          option: Posible entrada
-    - conditions: 
-      - '{{ door_open }}'
-      - '{{ is_state(area_input_select, ''Ocupado y cerrada'') }}'
-      sequence:
-      - service: input_select.select_option
-        data:
-          entity_id: !input 'area_mode'
-          option: Posible salida 2
-    - conditions: 
-      - '{{ door_closed }}'
-      - '{{ is_state(area_input_select, ''Posible entrada'') }}'
-      sequence:
-      - service: input_select.select_option
-        data:
-          entity_id: !input 'area_mode'
-          option: Vacio y cerrada
-    - conditions: 
-      - '{{ door_closed }}'
-      - '{{ is_state(area_input_select, ''Vacio y abierta'') }}'        
-      sequence:
-      - service: input_select.select_option
-        data:
-          entity_id: !input 'area_mode'
-          option: Vacio y cerrada
-    - conditions: 
-      - '{{ door_closed }}'
-      - '{{ is_state(area_input_select, ''Ocupado y abierta'') }}'            
-      sequence:
-      - service: input_select.select_option
-        data:
-          entity_id: !input 'area_mode'
-          option: Posible salida 1
-    - conditions: 
-      - '{{ door_closed }}'
-      - '{{ is_state(area_input_select, ''Posible salida 2'') }}'        
-      sequence:
-      - service: input_select.select_option
-        data:
-          entity_id: !input 'area_mode'
-          option: Vacio y cerrada
-    - conditions: 
-      - '{{ trigger.event.data.ocupado == true }}'
-      - '{{ is_state(area_input_select, ''Vacio y cerrada'') or is_state(area_input_select, ''Posible salida 1'') }}'           
-      - '{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}'      
-      sequence:
-      - service: input_select.select_option
-        data:
-          entity_id: !input 'area_mode'
-          option: Ocupado y cerrada
-    - conditions: 
-      - '{{ trigger.event.data.ocupado == true }}'
-      - '{{ is_state(area_input_select, ''Posible entrada'') or is_state(area_input_select, ''Vacio y abierta'') or is_state(area_input_select, ''Ocupado y abierta'') or is_state(area_input_select, ''Posible salida 2'') }}'
-      - '{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}'      
-      sequence:
-      - service: input_select.select_option
-        data:
-          entity_id: !input 'area_mode'
-          option: Ocupado y abierta
-    - conditions: 
-      - '{{ trigger.event.data.ocupado == false }}'
-      - '{{ is_state(area_input_select, ''Posible entrada'') or is_state(area_input_select, ''Ocupado y abierta'') or is_state(area_input_select, ''Posible salida 2'') }}'
-      - '{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}'
-      sequence:
-      - service: input_select.select_option
-        data:
-          entity_id: !input 'area_mode'
-          option: Vacio y abierta
-    - conditions: 
-      - '{{ trigger.event.data.ocupado == false }}'
-      - '{{ is_state(area_input_select, ''Posible salida 1'') }}'
-      - '{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}'
-      sequence:
-      - service: input_select.select_option
-        data:
-          entity_id: !input 'area_mode'
-          option: Vacio y cerrada
-    - conditions: 
-      - condition: state  
-        entity_id: !input 'area_mode'
-        state: Vacio y cerrada
-      sequence:
-      - service: light.turn_off
-        data:
-          entity_id: !input target_light
-      - wait_template: '{{ is_state(occupancy_sensor_id, ''on'') }}'
-        timeout: 00:00:15
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not wait.completed }}'
-          sequence:
-          - event: evento_cambio_modo_aseo
-            event_data:
-              ocupado: false
-              origin_entity_id: !input 'area_mode'
-              origin_state: Vacio y cerrada              
-        default:
-        - event: evento_cambio_modo_aseo
-          event_data:
-            ocupado: true
-            origin_entity_id: !input 'area_mode'
-            origin_state: Vacio y cerrada            
-    - conditions: 
-      - condition: state  
-        entity_id: !input 'area_mode'
-        state: Posible entrada
-      sequence:
-      - choose:
-        - conditions:
-          - condition: state  
-            entity_id: sun.sun
-            state: 'above_horizon'
-          sequence:
+      - conditions:
+          - "{{ door_open }}"
+          - "{{ is_state(area_input_select, 'Vacio y cerrada') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_mode"
+              option: Posible entrada
+      - conditions:
+          - "{{ door_open }}"
+          - "{{ is_state(area_input_select, 'Ocupado y cerrada') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_mode"
+              option: Posible salida 2
+      - conditions:
+          - "{{ door_closed }}"
+          - "{{ is_state(area_input_select, 'Posible entrada') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_mode"
+              option: Vacio y cerrada
+      - conditions:
+          - "{{ door_closed }}"
+          - "{{ is_state(area_input_select, 'Vacio y abierta') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_mode"
+              option: Vacio y cerrada
+      - conditions:
+          - "{{ door_closed }}"
+          - "{{ is_state(area_input_select, 'Ocupado y abierta') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_mode"
+              option: Posible salida 1
+      - conditions:
+          - "{{ door_closed }}"
+          - "{{ is_state(area_input_select, 'Posible salida 2') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_mode"
+              option: Vacio y cerrada
+      - conditions:
+          - "{{ trigger.event.data.ocupado == true }}"
+          - "{{ is_state(area_input_select, 'Vacio y cerrada') or is_state(area_input_select, 'Posible salida 1') }}"
+          - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_mode"
+              option: Ocupado y cerrada
+      - conditions:
+          - "{{ trigger.event.data.ocupado == true }}"
+          - "{{ is_state(area_input_select, 'Posible entrada') or is_state(area_input_select, 'Vacio y abierta') or is_state(area_input_select, 'Ocupado y abierta') or is_state(area_input_select, 'Posible salida 2') }}"
+          - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_mode"
+              option: Ocupado y abierta
+      - conditions:
+          - "{{ trigger.event.data.ocupado == false }}"
+          - "{{ is_state(area_input_select, 'Posible entrada') or is_state(area_input_select, 'Ocupado y abierta') or is_state(area_input_select, 'Posible salida 2') }}"
+          - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_mode"
+              option: Vacio y abierta
+      - conditions:
+          - "{{ trigger.event.data.ocupado == false }}"
+          - "{{ is_state(area_input_select, 'Posible salida 1') }}"
+          - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_mode"
+              option: Vacio y cerrada
+      - conditions:
+          - condition: state
+            entity_id: !input "area_mode"
+            state: Vacio y cerrada
+        sequence:
+          - service: light.turn_off
+            data:
+              entity_id: !input target_light
+          - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
+            timeout: 00:00:15
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ wait.completed }}"
+                sequence:
+                  - event: less_push_buttons
+                    event_data:
+                      ocupado: true
+                      origin_entity_id: !input "area_mode"
+                      origin_state: Vacio y cerrada
+      - conditions:
+          - condition: state
+            entity_id: !input "area_mode"
+            state: Posible entrada
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: state
+                    entity_id: sun.sun
+                    state: "above_horizon"
+                sequence:
+                  - service: light.turn_on
+                    data:
+                      entity_id: !input target_light
+                      brightness_pct: !input brightness_day
+                      kelvin: !input kelvin_day
+            default:
+              - service: light.turn_on
+                data:
+                  entity_id: !input target_light
+                  brightness_pct: !input brightness_night
+                  kelvin: !input kelvin_night
+          - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
+            timeout: 00:00:15
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ not wait.completed }}"
+                sequence:
+                  - event: less_push_buttons
+                    event_data:
+                      ocupado: false
+                      origin_entity_id: !input "area_mode"
+                      origin_state: Posible entrada
+            default:
+              - event: less_push_buttons
+                event_data:
+                  ocupado: true
+                  origin_entity_id: !input "area_mode"
+                  origin_state: Posible entrada
+      - conditions:
+          - condition: state
+            entity_id: !input "area_mode"
+            state: Vacio y abierta
+        sequence:
+          - service: light.turn_off
+            data:
+              entity_id: !input target_light
+          - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
+            timeout: 00:00:15
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ wait.completed }}"
+                sequence:
+                  - event: less_push_buttons
+                    event_data:
+                      ocupado: tru
+                      origin_entity_id: !input "area_mode"
+                      origin_state: Vacio y abierta
+      - conditions:
+          - condition: state
+            entity_id: !input "area_mode"
+            state: Ocupado y abierta
+        sequence:
           - service: light.turn_on
             data:
               entity_id: !input target_light
-              brightness_pct: !input brightness_day
-              kelvin: !input kelvin_day
-        default:
-        - service: light.turn_on
-          data:
-            entity_id: !input target_light
-            brightness_pct: !input brightness_night
-            kelvin: !input kelvin_night
-      - wait_template: '{{ is_state(occupancy_sensor_id, ''on'') }}'
-        timeout: 00:00:15
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not wait.completed }}'
-          sequence:
-          - event: evento_cambio_modo_aseo
-            event_data:
-              ocupado: false
-              origin_entity_id: !input 'area_mode'
-              origin_state: Posible entrada              
-        default:
-        - event: evento_cambio_modo_aseo
-          event_data:
-            ocupado: true
-            origin_entity_id: !input 'area_mode'
-            origin_state: Posible entrada            
-    - conditions: 
-      - condition: state  
-        entity_id: !input 'area_mode'
-        state: Vacio y abierta
-      sequence:
-      - service: light.turn_off
-        data:
-          entity_id: !input target_light
-      - wait_template: '{{ is_state(occupancy_sensor_id, ''on'') }}'
-        timeout: 00:00:15
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not wait.completed }}'
-          sequence:
-          - event: evento_cambio_modo_aseo
-            event_data:
-              ocupado: false
-              origin_entity_id: !input 'area_mode'
-              origin_state: Vacio y abierta              
-        default:
-        - event: evento_cambio_modo_aseo
-          event_data:
-            ocupado: true
-            origin_entity_id: !input 'area_mode'
-            origin_state: Vacio y abierta            
-    - conditions: 
-      - condition: state  
-        entity_id: !input 'area_mode'
-        state: Ocupado y abierta
-      sequence:
-      - service: light.turn_on
-        data:
-          entity_id: !input target_light
-      - wait_for_trigger:
-        - platform: state
-          entity_id: !input occupancy_sensor
-          to: 'off'
-          for: 00:02:00
-        timeout:
-          minutes: 00:02:01
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ wait.completed }}'
-          sequence:
-          - event: evento_cambio_modo_aseo
-            event_data:
-              ocupado: true
-              origin_entity_id: !input 'area_mode'
-              origin_state: Ocupado y abierta              
-        default:
-        - event: evento_cambio_modo_aseo
-          event_data:
-            ocupado: false
-            origin_entity_id: !input 'area_mode'
-            origin_state: Ocupado y abierta            
-    - conditions: 
-      - condition: state  
-        entity_id: !input 'area_mode'
-        state: Posible salida 1
-      sequence:
-      - service: light.turn_on
-        data:
-          entity_id: !input target_light
-      - wait_template: '{{ is_state(occupancy_sensor_id, ''on'') }}'
-        timeout: 00:00:15
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not wait.completed }}'
-          sequence:
-          - event: evento_cambio_modo_aseo
-            event_data:
-              ocupado: false
-              origin_entity_id: !input 'area_mode'
-              origin_state: Posible salida 1
-        default:
-        - event: evento_cambio_modo_aseo
-          event_data:
-            ocupado: true
-            origin_entity_id: !input 'area_mode'
-            origin_state: Posible salida 1            
-    - conditions: 
-      - condition: state  
-        entity_id: !input 'area_mode'
-        state: Posible salida 2
-      sequence:
-      - service: light.turn_on
-        data:
-          entity_id: !input target_light
-      - wait_template: '{{ is_state(occupancy_sensor_id, ''on'') }}'
-        timeout: 00:00:15
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not wait.completed }}'
-          sequence:
-          - event: evento_cambio_modo_aseo
-            event_data:
-              ocupado: false
-              origin_entity_id: !input 'area_mode'
-              origin_state: Posible salida 2
-        default:
-        - event: evento_cambio_modo_aseo
-          event_data:
-            ocupado: true
-            origin_entity_id: !input 'area_mode'
-            origin_state: Posible salida 2
-    - conditions: 
-      - condition: state  
-        entity_id: !input 'area_mode'
-        state: Ocupado y cerrada
-      sequence:
-      - service: light.turn_on
-        data:
-          entity_id: !input target_light
-      - wait_template: '{{ is_state(occupancy_sensor_id, ''on'') }}'
-        timeout: 00:00:15
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not wait.completed }}'
-          sequence:
-          - event: evento_cambio_modo_aseo
-            event_data:
-              ocupado: false
-              origin_entity_id: !input 'area_mode'
-              origin_state: Ocupado y cerrada
-        default:
-        - event: evento_cambio_modo_aseo
-          event_data:
-            ocupado: true
-            origin_entity_id: !input 'area_mode'
-            origin_state: Ocupado y cerrada
+          - wait_for_trigger:
+              - platform: state
+                entity_id: !input occupancy_sensor
+                to: "off"
+                for: 00:02:00
+            timeout:
+              minutes: 00:02:01
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ wait.completed }}"
+                sequence:
+                  - event: less_push_buttons
+                    event_data:
+                      ocupado: true
+                      origin_entity_id: !input "area_mode"
+                      origin_state: Ocupado y abierta
+            default:
+              - event: less_push_buttons
+                event_data:
+                  ocupado: false
+                  origin_entity_id: !input "area_mode"
+                  origin_state: Ocupado y abierta
+      - conditions:
+          - condition: state
+            entity_id: !input "area_mode"
+            state: Posible salida 1
+        sequence:
+          - service: light.turn_on
+            data:
+              entity_id: !input target_light
+          - wait_template: "{{ is_state(occupancy_sensor_id, 'off') }}"
+            timeout: 00:00:15
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ not wait.completed }}"
+                sequence:
+                  - event: less_push_buttons
+                    event_data:
+                      ocupado: true
+                      origin_entity_id: !input "area_mode"
+                      origin_state: Posible salida 1
+            default:
+              - event: less_push_buttons
+                event_data:
+                  ocupado: false
+                  origin_entity_id: !input "area_mode"
+                  origin_state: Posible salida 1
+      - conditions:
+          - condition: state
+            entity_id: !input "area_mode"
+            state: Posible salida 2
+        sequence:
+          - service: light.turn_on
+            data:
+              entity_id: !input target_light
+          - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
+            timeout: 00:00:15
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ not wait.completed }}"
+                sequence:
+                  - event: less_push_buttons
+                    event_data:
+                      ocupado: false
+                      origin_entity_id: !input "area_mode"
+                      origin_state: Posible salida 2
+            default:
+              - event: less_push_buttons
+                event_data:
+                  ocupado: true
+                  origin_entity_id: !input "area_mode"
+                  origin_state: Posible salida 2
+      - conditions:
+          - condition: state
+            entity_id: !input "area_mode"
+            state: Ocupado y cerrada
+        sequence:
+          - service: light.turn_on
+            data:
+              entity_id: !input target_light
+
