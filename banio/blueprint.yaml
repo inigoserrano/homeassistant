@@ -76,6 +76,8 @@ trigger:
     entity_id: !input "door_sensor"
   - platform: event
     event_type: less_push_buttons
+    event_data:
+      target_entity_id: !input "area_mode"
   - platform: state
     entity_id: !input "area_mode"
 action:
@@ -179,7 +181,7 @@ action:
             data:
               entity_id: !input target_light
           - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
-            timeout: 00:00:15
+            timeout: "00:00:15"
           - choose:
               - conditions:
                   - condition: template
@@ -188,6 +190,7 @@ action:
                   - event: less_push_buttons
                     event_data:
                       ocupado: true
+                      target_entity_id: !input "area_mode"
                       origin_entity_id: !input "area_mode"
                       origin_state: Vacio y cerrada
       - conditions:
@@ -213,7 +216,7 @@ action:
                   brightness_pct: !input brightness_night
                   kelvin: !input kelvin_night
           - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
-            timeout: 00:00:15
+            timeout: "00:00:15"
           - choose:
               - conditions:
                   - condition: template
@@ -247,7 +250,8 @@ action:
                 sequence:
                   - event: less_push_buttons
                     event_data:
-                      ocupado: tru
+                      ocupado: true
+                      target_entity_id: !input "area_mode"
                       origin_entity_id: !input "area_mode"
                       origin_state: Vacio y abierta
       - conditions:
@@ -273,12 +277,14 @@ action:
                   - event: less_push_buttons
                     event_data:
                       ocupado: true
+                      target_entity_id: !input "area_mode"
                       origin_entity_id: !input "area_mode"
                       origin_state: Ocupado y abierta
             default:
               - event: less_push_buttons
                 event_data:
                   ocupado: false
+                  target_entity_id: !input "area_mode"
                   origin_entity_id: !input "area_mode"
                   origin_state: Ocupado y abierta
       - conditions:
@@ -290,7 +296,7 @@ action:
             data:
               entity_id: !input target_light
           - wait_template: "{{ is_state(occupancy_sensor_id, 'off') }}"
-            timeout: 00:00:15
+            timeout: "00:00:15"
           - choose:
               - conditions:
                   - condition: template
@@ -299,12 +305,14 @@ action:
                   - event: less_push_buttons
                     event_data:
                       ocupado: true
+                      target_entity_id: !input "area_mode"
                       origin_entity_id: !input "area_mode"
                       origin_state: Posible salida 1
             default:
               - event: less_push_buttons
                 event_data:
                   ocupado: false
+                  target_entity_id: !input "area_mode"
                   origin_entity_id: !input "area_mode"
                   origin_state: Posible salida 1
       - conditions:
@@ -316,7 +324,7 @@ action:
             data:
               entity_id: !input target_light
           - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
-            timeout: 00:00:15
+            timeout: "00:00:15"
           - choose:
               - conditions:
                   - condition: template
@@ -325,12 +333,14 @@ action:
                   - event: less_push_buttons
                     event_data:
                       ocupado: false
+                      target_entity_id: !input "area_mode"
                       origin_entity_id: !input "area_mode"
                       origin_state: Posible salida 2
             default:
               - event: less_push_buttons
                 event_data:
                   ocupado: true
+                  target_entity_id: !input "area_mode"
                   origin_entity_id: !input "area_mode"
                   origin_state: Posible salida 2
       - conditions:
