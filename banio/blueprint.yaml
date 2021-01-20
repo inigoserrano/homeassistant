@@ -225,12 +225,14 @@ action:
                   - event: less_push_buttons
                     event_data:
                       ocupado: false
+                      target_entity_id: !input "area_mode"
                       origin_entity_id: !input "area_mode"
                       origin_state: Posible entrada
             default:
               - event: less_push_buttons
                 event_data:
                   ocupado: true
+                  target_entity_id: !input "area_mode"
                   origin_entity_id: !input "area_mode"
                   origin_state: Posible entrada
       - conditions:
@@ -351,4 +353,3 @@ action:
           - service: light.turn_on
             data:
               entity_id: !input target_light
-
