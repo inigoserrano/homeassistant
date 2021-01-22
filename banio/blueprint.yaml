@@ -268,27 +268,13 @@ action:
               - platform: state
                 entity_id: !input occupancy_sensor
                 to: "off"
-                for: 00:02:00
-            timeout:
-              minutes: 00:02:01
-          - choose:
-              - conditions:
-                  - condition: template
-                    value_template: "{{ wait.completed }}"
-                sequence:
-                  - event: less_push_buttons
-                    event_data:
-                      ocupado: true
-                      target_entity_id: !input "area_mode"
-                      origin_entity_id: !input "area_mode"
-                      origin_state: Ocupado y abierta
-            default:
-              - event: less_push_buttons
-                event_data:
-                  ocupado: false
-                  target_entity_id: !input "area_mode"
-                  origin_entity_id: !input "area_mode"
-                  origin_state: Ocupado y abierta
+                for: 60
+          - event: less_push_buttons
+            event_data:
+              ocupado: false
+              target_entity_id: !input "area_mode"
+              origin_entity_id: !input "area_mode"
+              origin_state: Ocupado y abierta
       - conditions:
           - condition: state
             entity_id: !input "area_mode"
