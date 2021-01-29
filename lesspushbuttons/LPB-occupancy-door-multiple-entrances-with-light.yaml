@@ -1,5 +1,5 @@
 blueprint:
-  name: LPB - Occupancy and Door Lights in an area with multiples entrances
+  name: LPB - Occupancy and Door sensors controling lights in an area with multiples entrances
   description: Turn light on based on detected motion and one door sensor with multiples entrances
   domain: automation
   input:
