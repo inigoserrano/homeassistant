@@ -82,7 +82,6 @@ blueprint:
       default: []
       selector:
         action: {}
-  source_url: https://community.home-assistant.io/t/zha-ikea-five-button-remote-for-lights/253804
 mode: restart
 max_exceeded: silent
 variables:
