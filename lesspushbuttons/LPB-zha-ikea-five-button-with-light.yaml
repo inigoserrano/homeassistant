@@ -99,7 +99,7 @@ action:
       args: "{{ trigger.event.data.args }}"
   - event: less_push_buttons
     event_data:
-      ocupado: true
+      occupied: true
       origin_entity_id: !input "area_mode"
       origin_state: External
   - choose:
