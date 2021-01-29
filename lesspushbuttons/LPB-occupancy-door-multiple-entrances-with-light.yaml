@@ -1,5 +1,5 @@
 blueprint:
-  name: LPB - Occupancy and Door sensors controling lights in an area with multiples entrances
+  name: LPB - Occupancy and Door Lights in an area with multiples entrances
   description: Turn light on based on detected motion and one door sensor with multiples entrances
   domain: automation
   input:
@@ -56,8 +56,8 @@ action:
           - condition: state
             entity_id: !input "occupancy_sensor"
             state: "off"
-            for: "00:02:00"
         sequence:
+          - delay: 60
           - service: light.turn_off
             target: !input "target_light"
-mode: single
+mode: parallel
