@@ -1,5 +1,5 @@
 blueprint:
-  name: LPB - Occupancy and door controlling lights in an area with only one entrance
+  name: LPB - Occupancy and door activated light with only one entrance
   description: Turn light on based on detected motion and detected door open in an area with only one entrance tha is controlled with the door sensor.
   domain: automation
   input:
