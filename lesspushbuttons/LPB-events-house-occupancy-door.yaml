@@ -1,6 +1,15 @@
 blueprint:
-  name: LPB - House occupancy controlled by a door sensor
-  description: XXXTurn light on based on detected motion and detected door open in an area with only one entrance tha is controlled with the door sensor.
+  name: LPB - House occupancy state controlled by a door sensor
+  description: 'This blueprint controls the occupancy of the house using one door sensor, usually the front door of the house.
+
+  The state of the house is maintained in an input select, that must exists, with the following items:
+      - Occupied
+      - Not occupied
+      - Possible exit
+      - Checking occupancy
+
+  To check if the house is occupied it uses the rest of the Less Push Buttons ecosystem of automations.
+  '
   domain: automation
   input:
     door_sensor:
@@ -71,7 +80,7 @@ action:
               entity_id: !input "area_state"
               option: Checking occupancy
       - conditions:
-          - "{{ trigger.event.data.ocupado == false }}"
+          - "{{ trigger.event.data.occupied == false }}"
           - "{{ is_state(area_input_select, 'Checking occupancy') }}"
           - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
         sequence:
@@ -80,14 +89,14 @@ action:
               entity_id: !input "area_state"
               option: Not occupied
       - conditions:
-          - "{{ trigger.event.data.ocupado == true }}"
+          - "{{ trigger.event.data.occupied == true }}"
           - "{{ is_state(area_input_select, 'Checking occupancy') }}"
         sequence:
           - service: input_select.select_option
             data:
               entity_id: !input "area_state"
               option: Occupied
-# Actions
+# Timeouts
       - conditions:
           - condition: state
             entity_id: !input "area_state"
@@ -96,7 +105,7 @@ action:
           - delay: !input "checking_occupancy_timeout"
           - event: less_push_buttons
             event_data:
-              ocupado: false
+              occupied: false
               target_entity_id: !input "area_state"
               origin_entity_id: !input "area_state"
               origin_state: Checking occupancy
