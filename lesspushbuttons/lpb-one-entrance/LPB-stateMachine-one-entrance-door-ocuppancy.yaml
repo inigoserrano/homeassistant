@@ -46,7 +46,7 @@ blueprint:
     checking_occupancy_timeout:
       name: Checking occupancy timeout
       description: Seconds to check if occupancy is detected.
-      default: 60
+      default: 15
       selector:
         number:
           min: 0
