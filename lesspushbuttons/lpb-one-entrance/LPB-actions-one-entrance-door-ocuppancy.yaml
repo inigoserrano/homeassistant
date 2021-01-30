@@ -1,50 +1,50 @@
 blueprint:
-  name: LPB - Occupancy and door activated light with only one entrance
-  description: Turn light on based on detected motion and detected door open in an area with only one entrance tha is controlled with the door sensor.
+  name: LPB - Only one entrace room actions
+  description: Blueprint to react to the Less Push Buttons one entrace state change.
   domain: automation
   input:
-    area_mode:
-      name: Area mode
+    area_state:
+      name: One entrance area state
       selector:
         entity:
           domain: input_select
-    vacio_cerrada_action:
+    not_occupied_closed_action:
       name: X 1 Light
       description: The light(s) to control
       default: []
       selector:
         action: {}
-    vacio_abierta_action:
+    not_occupied_open_action:
       name: X 2 Light
       description: The light(s) to control
       default: []
       selector:
         action: {}
-    ocupado_cerrada_action:
+    occupied_closed_action:
       name: X 3 Light
       description: The light(s) to control
       default: []
       selector:
         action: {}
-    ocupado_abierta_action:
+    occupied_open_action:
       name: X 4 Light
       description: The light(s) to control
       default: []
       selector:
         action: {}
-    posible_entrada_action:
+    checking_entry_action:
       name: X 5 Light
       description: The light(s) to control
       default: []
       selector:
         action: {}
-    posible_salida_1_action:
+    checking_occupancy_by_closure_action:
       name: X 6 Light
       description: The light(s) to control
       default: []
       selector:
         action: {}
-    posible_salida_2_action:
+    checking_occupancy_by_opening_action:
       name: X 7 Light
       description: The light(s) to control
       default: []
@@ -53,43 +53,43 @@ blueprint:
 mode: parallel
 trigger:
   - platform: state
-    entity_id: !input "area_mode"
+    entity_id: !input "area_state"
 action:
   - variables:
-      area_input_select: !input "area_mode"
+      area_input_select: !input "area_state"
   - choose:
       - conditions:
           - condition: state
-            entity_id: !input "area_mode"
-            state: Vacio y cerrada
-        sequence: !input 'vacio_cerrada_action'
+            entity_id: !input "area_state"
+            state: Not occupied and closed
+        sequence: !input 'not_occupied_closed_action'
       - conditions:
           - condition: state
-            entity_id: !input "area_mode"
-            state: Posible entrada
-        sequence: !input 'posible_entrada_action'
+            entity_id: !input "area_state"
+            state: Checking entry
+        sequence: !input 'checking_entry_action'
       - conditions:
           - condition: state
-            entity_id: !input "area_mode"
-            state: Vacio y abierta
-        sequence: !input 'vacio_abierta_action'
+            entity_id: !input "area_state"
+            state: Not occupied and open
+        sequence: !input 'not_occupied_open_action'
       - conditions:
           - condition: state
-            entity_id: !input "area_mode"
-            state: Ocupado y abierta
-        sequence: !input 'ocupado_abierta_action'
+            entity_id: !input "area_state"
+            state: Occupied and closed
+        sequence: !input 'occupied_open_action'
       - conditions:
           - condition: state
-            entity_id: !input "area_mode"
-            state: Posible salida 1
-        sequence: !input 'posible_salida_1_action'
+            entity_id: !input "area_state"
+            state: Checking occupancy by closure
+        sequence: !input 'checking_occupancy_by_closure_action'
       - conditions:
           - condition: state
-            entity_id: !input "area_mode"
-            state: Posible salida 2
-        sequence: !input 'posible_salida_2_action'
+            entity_id: !input "area_state"
+            state: Checking occupancy by opening
+        sequence: !input 'checking_occupancy_by_opening_action'
       - conditions:
           - condition: state
-            entity_id: !input "area_mode"
-            state: Ocupado y cerrada
-        sequence: !input 'ocupado_cerrada_action'
+            entity_id: !input "area_state"
+            state: Occupied and closed
+        sequence: !input 'occupied_closed_action'
