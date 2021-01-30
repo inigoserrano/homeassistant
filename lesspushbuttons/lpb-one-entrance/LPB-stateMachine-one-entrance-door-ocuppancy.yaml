@@ -43,6 +43,24 @@ blueprint:
       selector:
         entity:
           domain: input_select
+    checking_occupancy_timeout:
+      name: Checking occupancy timeout
+      description: Seconds to check if occupancy is detected.
+      default: 60
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+    no_motion_wait:
+      name: Wait time
+      description: Time to consider occupied in opened states since last motion is detected.
+      default: 120
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
 mode: parallel
 trigger:
   - platform: state
@@ -151,7 +169,7 @@ action:
             state: Not occupied and closed
         sequence:
           - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
-            timeout: "00:00:15"
+            timeout: !input "checking_occupancy_timeout"
           - choose:
               - conditions:
                   - condition: template
@@ -169,7 +187,7 @@ action:
             state: Checking entry
         sequence:
           - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
-            timeout: "00:00:15"
+            timeout: !input "checking_occupancy_timeout"
           - choose:
               - conditions:
                   - condition: template
@@ -194,7 +212,7 @@ action:
             state: Not occupied and open
         sequence:
           - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
-            timeout: 00:00:15
+            timeout: !input "checking_occupancy_timeout"
           - choose:
               - conditions:
                   - condition: template
@@ -215,7 +233,7 @@ action:
               - platform: state
                 entity_id: !input occupancy_sensor
                 to: "off"
-                for: 60
+                for: !input "no_motion_wait"
           - event: less_push_buttons
             event_data:
               occupied: false
@@ -228,7 +246,7 @@ action:
             state: Checking occupancy by closure
         sequence:
           - wait_template: "{{ is_state(occupancy_sensor_id, 'off') }}"
-            timeout: "00:00:15"
+            timeout: !input "checking_occupancy_timeout"
           - choose:
               - conditions:
                   - condition: template
@@ -253,7 +271,7 @@ action:
             state: Checking occupancy by opening
         sequence:
           - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
-            timeout: "00:00:15"
+            timeout: !input "checking_occupancy_timeout"
           - choose:
               - conditions:
                   - condition: template
