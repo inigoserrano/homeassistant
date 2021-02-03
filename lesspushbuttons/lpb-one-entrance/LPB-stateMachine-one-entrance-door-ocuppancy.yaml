@@ -161,18 +161,12 @@ action:
             state: Not occupied and closed
         sequence:
           - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
-            timeout: !input "checking_occupancy_timeout"
-          - choose:
-              - conditions:
-                  - condition: template
-                    value_template: "{{ wait.completed }}"
-                sequence:
-                  - event: less_push_buttons
-                    event_data:
-                      occupied: true
-                      target_entity_id: !input "area_state"
-                      origin_entity_id: !input "area_state"
-                      origin_state: Not occupied and closed
+          - event: less_push_buttons
+            event_data:
+              occupied: true
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: Not occupied and closed
       - conditions:
           - condition: state
             entity_id: !input "area_state"
