@@ -1,5 +1,5 @@
 blueprint:
-  name: LPB - House occupancy state controlled by a door sensor
+  name: LPB - State of house occupancy controlled by a door sensor
   description: 'This blueprint controls the occupancy of the house using one door sensor, usually the front door of the house.
 
   The state of the house is maintained in an input select, that must exists, with the following items:
