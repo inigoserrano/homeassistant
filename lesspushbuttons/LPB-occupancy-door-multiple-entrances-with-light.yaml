@@ -56,8 +56,8 @@ action:
           - condition: state
             entity_id: !input "occupancy_sensor"
             state: "off"
-            for: "00:02:00"
         sequence:
+          - delay: 60
           - service: light.turn_off
             target: !input "target_light"
-mode: single
+mode: parallel

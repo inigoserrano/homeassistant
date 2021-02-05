@@ -189,7 +189,7 @@ action:
                 sequence:
                   - event: less_push_buttons
                     event_data:
-                      ocupado: true
+                      occupied: true
                       target_entity_id: !input "area_mode"
                       origin_entity_id: !input "area_mode"
                       origin_state: Vacio y cerrada
@@ -224,14 +224,14 @@ action:
                 sequence:
                   - event: less_push_buttons
                     event_data:
-                      ocupado: false
+                      occupied: false
                       target_entity_id: !input "area_mode"
                       origin_entity_id: !input "area_mode"
                       origin_state: Posible entrada
             default:
               - event: less_push_buttons
                 event_data:
-                  ocupado: true
+                  occupied: true
                   target_entity_id: !input "area_mode"
                   origin_entity_id: !input "area_mode"
                   origin_state: Posible entrada
@@ -252,7 +252,7 @@ action:
                 sequence:
                   - event: less_push_buttons
                     event_data:
-                      ocupado: true
+                      occupied: true
                       target_entity_id: !input "area_mode"
                       origin_entity_id: !input "area_mode"
                       origin_state: Vacio y abierta
@@ -271,7 +271,7 @@ action:
                 for: 60
           - event: less_push_buttons
             event_data:
-              ocupado: false
+              occupied: false
               target_entity_id: !input "area_mode"
               origin_entity_id: !input "area_mode"
               origin_state: Ocupado y abierta
@@ -292,14 +292,14 @@ action:
                 sequence:
                   - event: less_push_buttons
                     event_data:
-                      ocupado: true
+                      occupied: true
                       target_entity_id: !input "area_mode"
                       origin_entity_id: !input "area_mode"
                       origin_state: Posible salida 1
             default:
               - event: less_push_buttons
                 event_data:
-                  ocupado: false
+                  occupied: false
                   target_entity_id: !input "area_mode"
                   origin_entity_id: !input "area_mode"
                   origin_state: Posible salida 1
@@ -320,14 +320,14 @@ action:
                 sequence:
                   - event: less_push_buttons
                     event_data:
-                      ocupado: false
+                      occupied: false
                       target_entity_id: !input "area_mode"
                       origin_entity_id: !input "area_mode"
                       origin_state: Posible salida 2
             default:
               - event: less_push_buttons
                 event_data:
-                  ocupado: true
+                  occupied: true
                   target_entity_id: !input "area_mode"
                   origin_entity_id: !input "area_mode"
                   origin_state: Posible salida 2

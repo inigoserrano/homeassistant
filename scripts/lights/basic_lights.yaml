@@ -1,0 +1,30 @@
+lpb_turn_on_light:
+  fields:
+    target_light:
+      description: The lights to keep in sync.
+    brightness_day:
+      description: Brightness of the light when turning on in the day, the sun is 'above_horizon'.
+    kelvin_day:
+      description: Kelvin temperature of the light when turning on in the day, the sun is 'above_horizon'.
+    brightness_night:
+      description: Brightness of the light when turning on in the night, the sun is 'below_horizon'.
+    kelvin_night:
+      description: Kelvin temperature of the light when turning on in the night, the sun is 'below_horizon'.
+  sequence:
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: sun.sun
+              state: "above_horizon"
+          sequence:
+            - service: light.turn_on
+              data:
+                entity_id: target_light
+                brightness_pct: brightness_day
+                kelvin: kelvin_day
+      default:
+        - service: light.turn_on
+          data:
+            entity_id: target_light
+            brightness_pct: brightness_night
+            kelvin: kelvin_night

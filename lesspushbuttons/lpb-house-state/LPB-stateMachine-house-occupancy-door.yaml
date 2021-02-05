@@ -1,0 +1,111 @@
+blueprint:
+  name: LPB - State of house occupancy controlled by a door sensor
+  description: 'This blueprint controls the occupancy of the house using one door sensor, usually the front door of the house.
+
+  The state of the house is maintained in an input select, that must exists, with the following items:
+      - Occupied
+      - Not occupied
+      - Possible exit
+      - Checking occupancy
+
+  To check if the house is occupied it uses the rest of the Less Push Buttons ecosystem of automations.
+  '
+  domain: automation
+  input:
+    door_sensor:
+      name: Door Sensor
+      description: The door sensor of the entrance door to the house.
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: opening
+    area_state:
+      name: House state
+      description: 'Input select that handles the area state. It must have the following items:
+      - Occupied
+      - Not occupied
+      - Possible exit
+      - Checking occupancy
+      '
+      selector:
+        entity:
+          domain: input_select
+    checking_occupancy_timeout:
+      name: Checking occupancy timeout
+      description: Seconds to check if occupancy is detected.
+      default: 60
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+mode: parallel
+trigger:
+  - platform: event
+    event_type: less_push_buttons
+  - platform: state
+    entity_id: !input "door_sensor"
+  - platform: state
+    entity_id: !input "area_state"
+action:
+  - variables:
+      door_entity_id: !input "door_sensor"
+      door_open: "{{ trigger.entity_id == door_entity_id and trigger.to_state.state == 'on' }}"
+      door_closed: "{{ trigger.entity_id == door_entity_id and trigger.to_state.state == 'off' }}"
+      area_input_select: !input "area_state"
+  - choose:
+# Events and next state
+      - conditions:
+          - "{{ door_open }}"
+          - "{{ is_state(area_input_select, 'Not occupied') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Occupied
+      - conditions:
+          - "{{ door_open }}"
+          - "{{ is_state(area_input_select, 'Occupied') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Possible exit
+      - conditions:
+          - "{{ door_closed }}"
+          - "{{ is_state(area_input_select, 'Possible exit') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Checking occupancy
+      - conditions:
+          - "{{ trigger.event.data.occupied == false }}"
+          - "{{ is_state(area_input_select, 'Checking occupancy') }}"
+          - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Not occupied
+      - conditions:
+          - "{{ trigger.event.data.occupied == true }}"
+          - "{{ is_state(area_input_select, 'Checking occupancy') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Occupied
+# Timeouts
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Checking occupancy
+        sequence:
+          - delay: !input "checking_occupancy_timeout"
+          - event: less_push_buttons
+            event_data:
+              occupied: false
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: Checking occupancy

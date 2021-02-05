@@ -82,7 +82,6 @@ blueprint:
       default: []
       selector:
         action: {}
-  source_url: https://community.home-assistant.io/t/zha-ikea-five-button-remote-for-lights/253804
 mode: restart
 max_exceeded: silent
 variables:
@@ -100,7 +99,7 @@ action:
       args: "{{ trigger.event.data.args }}"
   - event: less_push_buttons
     event_data:
-      ocupado: true
+      occupied: true
       origin_entity_id: !input "area_mode"
       origin_state: External
   - choose:

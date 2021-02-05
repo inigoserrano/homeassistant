@@ -1,0 +1,95 @@
+blueprint:
+  name: LPB - Only one entrace room actions
+  description: Blueprint to react to the Less Push Buttons one entrace state change.
+  domain: automation
+  input:
+    area_state:
+      name: One entrance area state
+      selector:
+        entity:
+          domain: input_select
+    not_occupied_closed_action:
+      name: Not occupied and closed
+      description: Not occupied and door closed state actions
+      default: []
+      selector:
+        action: {}
+    not_occupied_open_action:
+      name: Not occupied and open 
+      description: Not occupied and door open state actions 
+      default: []
+      selector:
+        action: {}
+    occupied_closed_action:
+      name: Occupied and closed 
+      description: Occupied and door closed state actions 
+      default: []
+      selector:
+        action: {}
+    occupied_open_action:
+      name: Occupied and open
+      description: Occupied and door open state actions
+      default: []
+      selector:
+        action: {}
+    checking_entry_action:
+      name: Checking entry
+      description: Checking entry actions. If the door opens when the door was closed and the room was not occupied
+      default: []
+      selector:
+        action: {}
+    checking_occupancy_by_closure_action:
+      name: Checking occupancy by closure
+      description: Checking occupancy by closure actions. If the door closed when the door was open and the room was occupied to check the occupancy
+      default: []
+      selector:
+        action: {}
+    checking_occupancy_by_opening_action:
+      name: Checking occupancy by opening
+      description: Checking occupancy by opening actions. If the door opens when the door was closed and the room was occupied to check the occupancy
+      default: []
+      selector:
+        action: {}
+mode: parallel
+trigger:
+  - platform: state
+    entity_id: !input "area_state"
+action:
+  - variables:
+      area_input_select: !input "area_state"
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Not occupied and closed
+        sequence: !input 'not_occupied_closed_action'
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Checking entry
+        sequence: !input 'checking_entry_action'
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Not occupied and open
+        sequence: !input 'not_occupied_open_action'
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Occupied and closed
+        sequence: !input 'occupied_open_action'
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Checking occupancy by closure
+        sequence: !input 'checking_occupancy_by_closure_action'
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Checking occupancy by opening
+        sequence: !input 'checking_occupancy_by_opening_action'
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Occupied and closed
+        sequence: !input 'occupied_closed_action'

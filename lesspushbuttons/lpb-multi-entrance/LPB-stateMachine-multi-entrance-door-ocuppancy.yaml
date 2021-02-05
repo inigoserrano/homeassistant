@@ -1,0 +1,308 @@
+blueprint:
+  name: LPB - State of room occupancy with multiple entraces controlled by only one door sensor and a occupancy sensor
+  description: 'This blueprint controls the occupancy of one room with multiple entrances using one door sensor and a occupancy sensor.
+
+  The state of the room is maintained in an input select, that must exists, with the following items:
+      - Not occupied and closed
+      - Not occupied and open
+      - Occupied and closed
+      - Occupied and open
+      - Checking entry
+      - Checking occupancy by closure
+      - Checking occupancy by opening
+
+  It also checks the rest of the Less Push Buttons ecosystem of automations to complement the occupancy sensor.
+  '
+  domain: automation
+  input:
+    occupancy_sensor:
+      name: Occupancy Sensor
+      description: The occupancy sensor in the room.
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: occupancy
+    door_sensor:
+      name: Door Sensor
+      description: The door sensor of the entrance door to the room.
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: opening
+    area_state:
+      name: Area state
+      description: 'Input select that handles the area state.'
+      selector:
+        entity:
+          domain: input_select
+    checking_occupancy_timeout:
+      name: Checking occupancy timeout
+      description: Seconds to check if occupancy is detected.
+      default: 15
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+    no_motion_wait:
+      name: Wait time
+      description: Time to consider occupied in opened states since last motion is detected.
+      default: 60
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+mode: parallel
+trigger:
+  - platform: state
+    entity_id: !input "door_sensor"
+  - platform: event
+    event_type: less_push_buttons
+    event_data:
+      target_entity_id: !input "area_state"
+  - platform: state
+    entity_id: !input "area_state"
+  - platform: state
+    entity_id: !input "occupancy_sensor"
+action:
+  - variables:
+      occupancy_sensor_id: !input "occupancy_sensor"
+      door_entity_id: !input "door_sensor"
+      door_open: "{{ trigger.entity_id == door_entity_id and trigger.to_state.state == 'on' }}"
+      door_closed: "{{ trigger.entity_id == door_entity_id and trigger.to_state.state == 'off' }}"
+      area_input_select: !input "area_state"
+  - choose:
+      - conditions:
+          - "{{ door_open }}"
+          - "{{ is_state(area_input_select, 'Not occupied and closed') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Checking entry
+      - conditions:
+          - "{{ door_open }}"
+          - "{{ is_state(area_input_select, 'Occupied and closed') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Checking occupancy by opening
+      - conditions:
+          - "{{ door_closed }}"
+          - "{{ is_state(area_input_select, 'Checking entry') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Not occupied and closed
+      - conditions:
+          - "{{ door_closed }}"
+          - "{{ is_state(area_input_select, 'Not occupied and open') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Not occupied and closed
+      - conditions:
+          - "{{ door_closed }}"
+          - "{{ is_state(area_input_select, 'Occupied and open') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Checking occupancy by closure
+      - conditions:
+          - "{{ door_closed }}"
+          - "{{ is_state(area_input_select, 'Checking occupancy by opening') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Not occupied and closed
+      - conditions:
+          - "{{ trigger.event.data.occupied == true }}"
+          - "{{ is_state(area_input_select, 'Not occupied and closed') or is_state(area_input_select, 'Checking occupancy by closure') }}"
+          - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Occupied and closed
+      - conditions:
+          - "{{ is_state(occupancy_sensor_id, 'on') }}"
+          - "{{ is_state(area_input_select, 'Not occupied and closed') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Occupied and closed
+      - conditions:
+          - "{{ trigger.event.data.occupied == true }}"
+          - "{{ is_state(area_input_select, 'Checking entry') or is_state(area_input_select, 'Not occupied and open') or is_state(area_input_select, 'Occupied and open') or is_state(area_input_select, 'Checking occupancy by opening') }}"
+          - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Occupied and open
+      - conditions:
+          - "{{ trigger.event.data.occupied == false }}"
+          - "{{ is_state(area_input_select, 'Checking entry') or is_state(area_input_select, 'Occupied and open') or is_state(area_input_select, 'Checking occupancy by opening') }}"
+          - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Not occupied and open
+      - conditions:
+          - "{{ trigger.event.data.occupied == false }}"
+          - "{{ is_state(area_input_select, 'Checking occupancy by closure') }}"
+          - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Not occupied and closed
+      - conditions:
+          - "{{ trigger.event.data.occupied == false }}"
+          - "{{ is_state(area_input_select, 'Occupied and closed') }}"
+          - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Not occupied and closed
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Not occupied and closed
+        sequence:
+          - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
+          - event: less_push_buttons
+            event_data:
+              occupied: true
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: Not occupied and closed
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Not occupied and open
+        sequence:
+          - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
+          - event: less_push_buttons
+            event_data:
+              occupied: true
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: Not occupied and open
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Occupied and open
+        sequence:
+          - wait_for_trigger:
+              - platform: state
+                entity_id: !input occupancy_sensor
+                to: "off"
+                for: !input "no_motion_wait"
+          - event: less_push_buttons
+            event_data:
+              occupied: false
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: Occupied and open
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Occupied and closed
+        sequence:
+          - wait_for_trigger:
+              - platform: state
+                entity_id: !input occupancy_sensor
+                to: "off"
+                for: !input "no_motion_wait"
+          - event: less_push_buttons
+            event_data:
+              occupied: false
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: Occupied and closed
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Checking entry
+        sequence:
+          - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
+            timeout: !input "checking_occupancy_timeout"
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ not wait.completed }}"
+                sequence:
+                  - event: less_push_buttons
+                    event_data:
+                      occupied: false
+                      target_entity_id: !input "area_state"
+                      origin_entity_id: !input "area_state"
+                      origin_state: Checking entry
+            default:
+              - event: less_push_buttons
+                event_data:
+                  occupied: true
+                  target_entity_id: !input "area_state"
+                  origin_entity_id: !input "area_state"
+                  origin_state: Checking entry
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Checking occupancy by closure
+        sequence:
+          - wait_template: "{{ is_state(occupancy_sensor_id, 'off') }}"
+            timeout: !input "checking_occupancy_timeout"
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ not wait.completed }}"
+                sequence:
+                  - event: less_push_buttons
+                    event_data:
+                      occupied: true
+                      target_entity_id: !input "area_state"
+                      origin_entity_id: !input "area_state"
+                      origin_state: Checking occupancy by closure
+            default:
+              - event: less_push_buttons
+                event_data:
+                  occupied: false
+                  target_entity_id: !input "area_state"
+                  origin_entity_id: !input "area_state"
+                  origin_state: Checking occupancy by closure
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Checking occupancy by opening
+        sequence:
+          - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
+            timeout: !input "checking_occupancy_timeout"
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ not wait.completed }}"
+                sequence:
+                  - event: less_push_buttons
+                    event_data:
+                      occupied: false
+                      target_entity_id: !input "area_state"
+                      origin_entity_id: !input "area_state"
+                      origin_state: Checking occupancy by opening
+            default:
+              - event: less_push_buttons
+                event_data:
+                  occupied: true
+                  target_entity_id: !input "area_state"
+                  origin_entity_id: !input "area_state"
+                  origin_state: Checking occupancy by opening
+
