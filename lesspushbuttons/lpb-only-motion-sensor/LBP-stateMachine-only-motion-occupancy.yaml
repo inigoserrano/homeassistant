@@ -1,12 +1,19 @@
 blueprint:
-  name: LPB - Only one entrace room occupancy state controlled by a door sensor and a occupancy sensor
-  description: 'This blueprint controls the occupancy of one room with only one motion sensor.
+  name: LPB - State of room occupancy with only motion sensor
+  description: '
+  
+  This blueprint controls the occupancy of one room with only one motion sensor.
 
   The state of the room is maintained in an input select, that must exists, with the following items:
-      - Not occupied
-      - Occupied
+
+      * Not occupied
+
+      * Occupied
+
+      * Checking occupancy
 
   It also checks the rest of the Less Push Buttons ecosystem of automations to complement the motion sensor.
+
   '
   domain: automation
   input:
@@ -19,10 +26,7 @@ blueprint:
           device_class: motion
     area_state:
       name: Area state
-      description: 'Input select that handles the area state. It must have the following items:
-      - Not occupied
-      - Occupied
-      '
+      description: 'Input select that handles the area state.'
       selector:
         entity:
           domain: input_select
@@ -47,6 +51,7 @@ trigger:
     entity_id: !input "area_state"
 action:
   - variables:
+      motion_sensor_id: !input "motion_sensor"
       motion_detected: "{{ trigger.entity_id == door_entity_id and trigger.to_state.state == 'on' }}"
       not_motion_detected: "{{ trigger.entity_id == door_entity_id and trigger.to_state.state == 'off' }}"
 # Events and next state
@@ -64,7 +69,7 @@ action:
           - service: input_select.select_option
             data:
               entity_id: !input "area_state"
-              option: Not occupied
+              option: Checking occupancy
       - conditions:
           - "{{ trigger.event.data.occupied == true }}"
         sequence:
@@ -88,5 +93,42 @@ action:
           - event: less_push_buttons
             event_data:
               occupied: true
+              target_entity_id: !input "area_state"
               origin_entity_id: !input "area_state"
-              origin_state: External
+              origin_state: Occupied
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Not occupied
+        sequence:
+          - event: less_push_buttons
+            event_data:
+              occupied: false
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: Not occupied
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Checking occupancy
+        sequence:
+          - wait_template: "{{ is_state(motion_sensor_id, 'on') }}"
+            timeout: !input "no_motion_wait"
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ not wait.completed }}"
+                sequence:
+                  - event: less_push_buttons
+                    event_data:
+                      occupied: false
+                      target_entity_id: !input "area_state"
+                      origin_entity_id: !input "area_state"
+                      origin_state: Checking occupancy
+            default:
+              - event: less_push_buttons
+                event_data:
+                  occupied: true
+                  target_entity_id: !input "area_state"
+                  origin_entity_id: !input "area_state"
+                  origin_state: Checking occupancy
