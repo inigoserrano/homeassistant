@@ -34,8 +34,9 @@ blueprint:
         target:
           entity:
             domain: light
-    area_mode:
-      name: Area mode
+    area_state:
+      name: Area state
+      description: "Input select that handles the area state."
       selector:
         entity:
           domain: input_select
@@ -100,7 +101,8 @@ action:
   - event: less_push_buttons
     event_data:
       occupied: true
-      origin_entity_id: !input "area_mode"
+      target_entity_id: !input "area_state"
+      origin_entity_id: !input "area_state"
       origin_state: External
   - choose:
       - conditions:
