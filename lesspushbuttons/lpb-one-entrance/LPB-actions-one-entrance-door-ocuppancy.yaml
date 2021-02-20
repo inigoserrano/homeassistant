@@ -1,52 +1,52 @@
 blueprint:
   name: LPB - Only one entrace room actions
-  description: Blueprint to react to the Less Push Buttons one entrace state change.
+  description: XXXXTurn light on based on detected motion and detected door open in an area with only one entrance that is controlled with the door sensor.
   domain: automation
   input:
     area_state:
-      name: One entrance area state
+      name: Area state
       selector:
         entity:
           domain: input_select
     not_occupied_closed_action:
-      name: Not occupied and closed
-      description: Not occupied and door closed state actions
+      name: Not occupied closed
+      description: Action to execute when the room is not occupied and the door is closed. For example turn off the lights
       default: []
       selector:
         action: {}
     not_occupied_open_action:
-      name: Not occupied and open 
-      description: Not occupied and door open state actions 
+      name: Not occupied open
+      description: Action to execute when the room is not occupied and the door is open. For example turn off the lights
       default: []
       selector:
         action: {}
     occupied_closed_action:
-      name: Occupied and closed 
-      description: Occupied and door closed state actions 
+      name: Occupied closed
+      description: Action to execute when the room is occupied and the door is closed. For example turn on the lights
       default: []
       selector:
         action: {}
     occupied_open_action:
-      name: Occupied and open
-      description: Occupied and door open state actions
+      name: Occupied open
+      description: Action to execute when the room is occupied and the door is open. For example turn on the lights
       default: []
       selector:
         action: {}
     checking_entry_action:
       name: Checking entry
-      description: Checking entry actions. If the door opens when the door was closed and the room was not occupied
+      description: When the room was not occupied and the door closed if the door opens we must check if it is an entry o not. For example turn on the lights
       default: []
       selector:
         action: {}
     checking_occupancy_by_closure_action:
       name: Checking occupancy by closure
-      description: Checking occupancy by closure actions. If the door closed when the door was open and the room was occupied to check the occupancy
+      description: When the room was occupied and the door open if the door closes we must check if it is an exit o not. For example turn on the lights
       default: []
       selector:
         action: {}
     checking_occupancy_by_opening_action:
       name: Checking occupancy by opening
-      description: Checking occupancy by opening actions. If the door opens when the door was closed and the room was occupied to check the occupancy
+      description: When the room was occupied and the door closed if the door opens we must check if it is an exit o not. For example turn on the lights
       default: []
       selector:
         action: {}
@@ -62,34 +62,34 @@ action:
           - condition: state
             entity_id: !input "area_state"
             state: Not occupied and closed
-        sequence: !input 'not_occupied_closed_action'
+        sequence: !input "not_occupied_closed_action"
       - conditions:
           - condition: state
             entity_id: !input "area_state"
             state: Checking entry
-        sequence: !input 'checking_entry_action'
+        sequence: !input "checking_entry_action"
       - conditions:
           - condition: state
             entity_id: !input "area_state"
             state: Not occupied and open
-        sequence: !input 'not_occupied_open_action'
+        sequence: !input "not_occupied_open_action"
       - conditions:
           - condition: state
             entity_id: !input "area_state"
             state: Occupied and closed
-        sequence: !input 'occupied_open_action'
+        sequence: !input "occupied_open_action"
       - conditions:
           - condition: state
             entity_id: !input "area_state"
             state: Checking occupancy by closure
-        sequence: !input 'checking_occupancy_by_closure_action'
+        sequence: !input "checking_occupancy_by_closure_action"
       - conditions:
           - condition: state
             entity_id: !input "area_state"
             state: Checking occupancy by opening
-        sequence: !input 'checking_occupancy_by_opening_action'
+        sequence: !input "checking_occupancy_by_opening_action"
       - conditions:
           - condition: state
             entity_id: !input "area_state"
             state: Occupied and closed
-        sequence: !input 'occupied_closed_action'
+        sequence: !input "occupied_closed_action"
