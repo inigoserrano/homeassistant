@@ -1,9 +1,17 @@
 # Less Push Buttons / Menos pulsadores
 
-Less Push Buttons was born as an initiative to help increase the level of intelligence in a house managed with Home Assistant through automations that combine information from various sensors and a communication framework between automations that allows creating an ecosystem that facilitates cooperation between the different automations.
+The objective of this project is to create automations for Home Assistant that allow replicating the experience of using a traditional house but reducing the use of push buttons to the maximum.
 
-Detailed documentation is available in the [wiki](https://github.com/inigoserrano/homeassistant/wiki/Less-Push-Buttons)
+Documentation is available in this pages:
+* [Introduction and Objectives](https://github.com/inigoserrano/homeassistant/wiki/Less-Push-Buttons)
+* [Approach](https://github.com/inigoserrano/homeassistant/wiki/Less-Push-Buttons-approach)
+* [Project origin](https://github.com/inigoserrano/homeassistant/wiki/Project-origin)
+* [Blueprints catalog](https://github.com/inigoserrano/homeassistant/wiki/Blueprints-catalog)
 
-_Less Push Buttons nace como iniciativa para ayudar a aumentar el nivel de inteligencia de una casa gestionada con Home Assistant mediante automatizaciones que combinen la información de varios sensores y un marco de comunicación entre automatizaciones que permita crear un ecosistema que facilite la cooperación entre las diferentes automatizaciones._
+_El objetivo de este proyecto es crear automatizaciones para Home Assistant que permitan replicar la experiencia de uso de una casa tradicional pero reduciendo al máximo el uso de pulsadores._
 
-_La documentación detallada está disponible en la [wiki](https://github.com/inigoserrano/homeassistant/wiki/Less-Push-Buttons-en-Español)_
+_La documentación está disponible en las siguientes páginas:_
+* [Introducción y Objetivos](https://github.com/inigoserrano/homeassistant/wiki/Less-Push-Buttons-en-Español)
+* [Planteamiento](https://github.com/inigoserrano/homeassistant/wiki/Planteamiento-Less-Push-Buttons)
+* [Origen del proyecto](https://github.com/inigoserrano/homeassistant/wiki/Origen-del-proyecto)
+* [Catálogo de Blueprints](https://github.com/inigoserrano/homeassistant/wiki/Catalogo-de-Blueprints)
