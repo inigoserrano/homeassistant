@@ -1,17 +1,28 @@
 blueprint:
   name: LPB - State of room occupancy with multiple entraces controlled by only one door sensor and a occupancy sensor
-  description: 'This blueprint controls the occupancy of one room with multiple entrances using one door sensor and a occupancy sensor.
+  description: '
+  
+  This blueprint controls the occupancy of one room with **multiple** entrances using **only one** door sensor and a occupancy sensor.
 
   The state of the room is maintained in an input select, that must exists, with the following items:
-      - Not occupied and closed
-      - Not occupied and open
-      - Occupied and closed
-      - Occupied and open
-      - Checking entry
-      - Checking occupancy by closure
-      - Checking occupancy by opening
+
+      * Not occupied and closed
+
+      * Not occupied and open
+
+      * Occupied and closed
+
+      * Occupied and open
+
+      * Checking entry
+
+      * Checking occupancy by closure
+
+      * Checking occupancy by opening
+
 
   It also checks the rest of the Less Push Buttons ecosystem of automations to complement the occupancy sensor.
+
   '
   domain: automation
   input:
