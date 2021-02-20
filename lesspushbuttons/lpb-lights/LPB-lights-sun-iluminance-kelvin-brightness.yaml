@@ -1,6 +1,6 @@
 blueprint:
-  name: LPB - Lights management with day/night iluminance, temperature and brightness
-  description: Turn lights on and off with iluminance, brightness and diferents temperature of color depending of the sun (day/night).
+  name: LPB - Lights management with day/night temperature and brightness
+  description: Turn lights on and off with brightness and diferents temperature of color depending of the sun (day/night).
   domain: automation
   input:
     target_light:
@@ -14,23 +14,6 @@ blueprint:
       selector:
         entity:
           domain: input_select
-    iluminance_sensor:
-      name: Iluminance
-      description: The iluminance sensor.
-      selector:
-        entity:
-          domain: sensor
-          device_class: illuminance
-    iluminance_limit:
-      name: Iluminance limit
-      description: Iluminance limit to turn on the lights.
-      default: 100
-      selector:
-        number:
-          min: 0
-          max: 500.0
-          mode: slider
-          step: 10.0
     brightness_day:
       name: Brightness of the light during the day
       description: Brightness of the light when turning on in the day, the sun is 'above_horizon'.
@@ -77,10 +60,6 @@ mode: parallel
 trigger:
   - platform: state
     entity_id: !input "area_state"
-condition:
-  - condition: numeric_state
-    entity_id: !input "iluminance_sensor"
-    below: !input "iluminance_limit"
 action:
   - variables:
       area_input_select: !input "area_state"
