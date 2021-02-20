@@ -67,14 +67,16 @@ action:
       # Turn off the lights
       - conditions:
           - "{{ is_state(area_input_select, 'Not occupied and closed')
-            or is_state(area_input_select, 'Not occupied and open') }}"
+            or is_state(area_input_select, 'Not occupied and open')
+            or is_state(area_input_select, 'Not occupied') }}"
         sequence:
           - service: light.turn_off
             data:
               entity_id: !input target_light
       # Turn on the lights with parametrization
       - conditions:
-          - "{{ is_state(area_input_select, 'Checking entry') }}"
+          - "{{ is_state(area_input_select, 'Checking entry')
+            or is_state(area_input_select, 'Occupied') }}"
         sequence:
           - choose:
               - conditions:
