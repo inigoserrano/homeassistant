@@ -80,6 +80,7 @@ action:
               entity_id: !input "area_state"
               option: Checking occupancy
       - conditions:
+          - "{{ trigger.platform == 'event' }}"
           - "{{ trigger.event.data.occupied == false }}"
           - "{{ is_state(area_input_select, 'Checking occupancy') }}"
           - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
@@ -89,6 +90,7 @@ action:
               entity_id: !input "area_state"
               option: Not occupied
       - conditions:
+          - "{{ trigger.platform == 'event' }}"
           - "{{ trigger.event.data.occupied == true }}"
           - "{{ is_state(area_input_select, 'Checking occupancy') }}"
         sequence:
