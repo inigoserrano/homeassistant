@@ -40,6 +40,7 @@ blueprint:
           max: 3600
           unit_of_measurement: seconds
 mode: parallel
+max_exceeded: silent
 trigger:
   - platform: event
     event_type: less_push_buttons
