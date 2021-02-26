@@ -40,6 +40,7 @@ blueprint:
           max: 3600
           unit_of_measurement: seconds
 mode: parallel
+max_exceeded: silent
 trigger:
   - platform: state
     entity_id: !input "motion_sensor"  
@@ -82,6 +83,7 @@ action:
               entity_id: !input "area_state"
               option: Occupied
       - conditions:
+          - "{{ trigger.platform == 'event' }}"
           - "{{ trigger.event.data.occupied == false }}"
           - "{{ is_state(area_input_select, 'Checking occupancy') }}"
           - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
