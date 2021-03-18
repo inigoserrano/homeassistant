@@ -111,10 +111,4 @@ action:
                       target_entity_id: !input "area_state"
                       origin_entity_id: !input "area_state"
                       origin_state: Checking occupancy
-            default:
-              - event: less_push_buttons
-                event_data:
-                  occupied: true
-                  target_entity_id: !input "area_state"
-                  origin_entity_id: !input "area_state"
-                  origin_state: Checking occupancy
+
