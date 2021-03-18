@@ -74,6 +74,7 @@ blueprint:
           mode: slider
           step: 100.0
 mode: parallel
+max_exceeded: silent
 trigger:
   - platform: state
     entity_id: !input "area_state"
@@ -89,7 +90,7 @@ action:
         sequence:
           - service: light.turn_off
             data:
-              entity_id: !input target_light  
+              entity_id: !input target_light
       - conditions:
           - condition: numeric_state
             entity_id: !input "iluminance_sensor"
@@ -97,29 +98,29 @@ action:
         sequence:
           # Turn on the lights with parametrization
           - choose:
-            - conditions:
-                - "{{ is_state(area_input_select, 'Checking entry')
-                  or is_state(area_input_select, 'Occupied') }}"
-              sequence:
-                - choose:
-                    - conditions:
-                        - condition: state
-                          entity_id: sun.sun
-                          state: "above_horizon"
-                      sequence:
-                        - service: light.turn_on
-                          data:
-                            entity_id: !input target_light
-                            brightness_pct: !input brightness_day
-                            kelvin: !input kelvin_day
-                  default:
-                    - service: light.turn_on
-                      data:
-                        entity_id: !input target_light
-                        brightness_pct: !input brightness_night
-                        kelvin: !input kelvin_night              
-          # The rest is only turn on the light
-          default:
-            - service: light.turn_on
-              data:
-                entity_id: !input target_light
+              - conditions:
+                  - "{{ is_state(area_input_select, 'Checking entry')
+                    or is_state(area_input_select, 'Occupied') }}"
+                sequence:
+                  - choose:
+                      - conditions:
+                          - condition: state
+                            entity_id: sun.sun
+                            state: "above_horizon"
+                        sequence:
+                          - service: light.turn_on
+                            data:
+                              entity_id: !input target_light
+                              brightness_pct: !input brightness_day
+                              kelvin: !input kelvin_day
+                    default:
+                      - service: light.turn_on
+                        data:
+                          entity_id: !input target_light
+                          brightness_pct: !input brightness_night
+                          kelvin: !input kelvin_night
+            # The rest is only turn on the light
+            default:
+              - service: light.turn_on
+                data:
+                  entity_id: !input target_light
