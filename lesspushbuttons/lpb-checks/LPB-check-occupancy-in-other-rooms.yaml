@@ -1,0 +1,68 @@
+blueprint:
+  name: LPB - Check the occupancy in other rooms
+  description: '
+  
+  This blueprint checks the occupancy in other rooms. If no occupancy is detected then this room is occupied.
+
+  '
+  domain: automation
+  input:
+
+    area_state:
+      name: Area state
+      description: 'Input select that handles the area state.'
+      selector:
+        entity:
+          domain: input_select
+    query_wait:
+      name: Wait time
+      description: Time to wait until quering the rest of the rooms.
+      default: 60
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+mode: parallel
+trigger:
+  - platform: state
+    entity_id: !input "area_state"
+    to:
+      - Checking occupancy
+      - Not occupied and open
+action:
+  - delay: !input query_wait
+  # Only if the state is the same as when the delay started
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: 
+              - Checking occupancy
+              - Not occupied and open
+            sequence: 
+              # Query the rest of rooms
+              - event: less_push_buttons
+                event_data:
+                  lpb_type: query
+                  query_state: Occupied
+                  origin_entity_id: !input "area_state"
+              - wait_for_trigger:
+                  - platform: event
+                    event_type: less_push_buttons
+                    event_data:
+                      lpb_type: response
+                      occupied: true
+                      target_entity_id: !input "area_state"
+                timeout: "00:00:05"
+                # If no response then the room is still occupied
+              - choose:
+                  - conditions: "{{ not wait.completed }}"
+                    sequence:
+                      - event: less_push_buttons
+                        event_data:
+                          lpb_type: notify
+                          occupied: true
+                          target_entity_id: !input "area_state"
+                          origin_entity_id: !input "area_state"
+                          origin_state: External
