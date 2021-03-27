@@ -198,6 +198,7 @@ action:
           - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
           - event: less_push_buttons
             event_data:
+              lpb_type: notify
               occupied: true
               target_entity_id: !input "area_state"
               origin_entity_id: !input "area_state"
@@ -210,6 +211,7 @@ action:
           - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
           - event: less_push_buttons
             event_data:
+              lpb_type: notify
               occupied: true
               target_entity_id: !input "area_state"
               origin_entity_id: !input "area_state"
@@ -226,6 +228,7 @@ action:
                 for: !input "no_motion_wait"
           - event: less_push_buttons
             event_data:
+              lpb_type: notify
               occupied: false
               target_entity_id: !input "area_state"
               origin_entity_id: !input "area_state"
@@ -242,6 +245,7 @@ action:
                 for: !input "no_motion_wait"
           - event: less_push_buttons
             event_data:
+              lpb_type: notify
               occupied: false
               target_entity_id: !input "area_state"
               origin_entity_id: !input "area_state"
@@ -260,6 +264,7 @@ action:
                 sequence:
                   - event: less_push_buttons
                     event_data:
+                      lpb_type: notify
                       occupied: false
                       target_entity_id: !input "area_state"
                       origin_entity_id: !input "area_state"
@@ -267,6 +272,7 @@ action:
             default:
               - event: less_push_buttons
                 event_data:
+                  lpb_type: notify
                   occupied: true
                   target_entity_id: !input "area_state"
                   origin_entity_id: !input "area_state"
@@ -285,6 +291,7 @@ action:
                 sequence:
                   - event: less_push_buttons
                     event_data:
+                      lpb_type: notify
                       occupied: true
                       target_entity_id: !input "area_state"
                       origin_entity_id: !input "area_state"
@@ -292,6 +299,7 @@ action:
             default:
               - event: less_push_buttons
                 event_data:
+                  lpb_type: notify
                   occupied: false
                   target_entity_id: !input "area_state"
                   origin_entity_id: !input "area_state"
@@ -310,6 +318,7 @@ action:
                 sequence:
                   - event: less_push_buttons
                     event_data:
+                      lpb_type: notify
                       occupied: false
                       target_entity_id: !input "area_state"
                       origin_entity_id: !input "area_state"
@@ -317,6 +326,7 @@ action:
             default:
               - event: less_push_buttons
                 event_data:
+                  lpb_type: notify
                   occupied: true
                   target_entity_id: !input "area_state"
                   origin_entity_id: !input "area_state"

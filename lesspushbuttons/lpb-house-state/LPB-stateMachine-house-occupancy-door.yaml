@@ -108,6 +108,7 @@ action:
           - delay: !input "checking_occupancy_timeout"
           - event: less_push_buttons
             event_data:
+              lpb_type: notify
               occupied: false
               target_entity_id: !input "area_state"
               origin_entity_id: !input "area_state"
