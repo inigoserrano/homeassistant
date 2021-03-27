@@ -2,19 +2,7 @@ blueprint:
   name: LPB - Query response
   description: '
   
-  XXXXXXXXThis blueprint controls the occupancy of one room with only one motion sensor.
-
-  The state of the room is maintained in an input select, that must exists, with the following items:
-
-      * Not occupied
-
-      * Occupied
-
-      * Checking occupancy
-
-      * Checking in other rooms
-
-  It also checks the rest of the Less Push Buttons ecosystem of automations to complement the motion sensor.
+  This blueprint responds to querys of the state of the room.
 
   '
   domain: automation
