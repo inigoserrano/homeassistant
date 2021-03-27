@@ -1,0 +1,50 @@
+blueprint:
+  name: LPB - Query response
+  description: '
+  
+  XXXXXXXXThis blueprint controls the occupancy of one room with only one motion sensor.
+
+  The state of the room is maintained in an input select, that must exists, with the following items:
+
+      * Not occupied
+
+      * Occupied
+
+      * Checking occupancy
+
+      * Checking in other rooms
+
+  It also checks the rest of the Less Push Buttons ecosystem of automations to complement the motion sensor.
+
+  '
+  domain: automation
+  input:
+    area_state:
+      name: Area state
+      description: 'Input select that handles the area state.'
+      selector:
+        entity:
+          domain: input_select
+mode: parallel
+trigger:
+  - platform: event
+    event_type: less_push_buttons
+    event_data:
+      lpb_type: query
+      query_state: Occupied
+condition:
+  - condition: state
+    entity_id: !input "area_state"
+    state:
+      - Occupied and closed
+      - Occupied and open
+      - Occupied
+action:
+  - event: less_push_buttons
+    event_data:
+      lpb_type: response
+      occupied: true
+      target_entity_id: "{{ trigger.event.data.origin_entity_id }}"
+      origin_entity_id: !input "area_state"
+      origin_state: Query
+      
