@@ -1,0 +1,43 @@
+blueprint:
+  name: LPB - Check anomalous occupancy of a room
+  description: '
+  
+  This blueprint controls the anomalous state of a room. Anomalous occupancy is 
+  when the room stay in occupancy state form more than the amount of minutes of 
+  the parameter.
+
+  '
+  domain: automation
+  input:
+    area_state:
+      name: Area state
+      description: 'Input select that handles the area state.'
+      selector:
+        entity:
+          domain: input_select
+    state_for:
+      name: Maximum time
+      description: Maximum time in occupied state.
+      default: 30
+      selector:
+        number:
+          min: 1
+          max: 240
+          unit_of_measurement: minutes
+    trigger_action:
+      name: Time exceed actions
+      description: Action to execute when the time is exceed
+      default: []
+      selector:
+        action: {}
+mode: parallel
+trigger:
+  - platform: state
+    entity_id: !input "area_state"
+    to: 
+      - Occupied
+      - Occupied and closed
+      - Occupied and open
+    for:  
+      minutes: !input "state_for"
+action: !input "trigger_action"
