@@ -18,6 +18,13 @@ blueprint:
         entity:
           domain: binary_sensor
           device_class: opening
+    occupancy_sensor:
+      name: Occupancy Sensor
+      description: The occupancy sensor in the house.
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: occupancy
     area_state:
       name: House state
       description: 'Input select that handles the area state. It must have the following items:
@@ -45,47 +52,52 @@ trigger:
     to: 'off'
 action:
   - variables:
-      door_entity_id: !input "door_sensor"
-      door_change: "{{ trigger.entity_id == door_entity_id }}"
+      occupancy_sensor_id: !input "occupancy_sensor"
   - choose:
-# Events and next state
-      - conditions:
-          - "{{ door_change }}"
+      - conditions: 
+          - condition: state
+            entity_id: !input "area_state"
+            state: 'Occupied'
         sequence:
           - service: input_select.select_option
             data:
               entity_id: !input "area_state"
               option: Checking occupancy
-# Timeouts
-      - conditions:
-          - condition: state
-            entity_id: !input "area_state"
-            state: Checking occupancy
-        sequence: 
-          # Query the rooms of the house
-          - event: less_push_buttons
-            event_data:
-              lpb_type: query
-              query_state: Occupied
-              origin_entity_id: !input "area_state"
-          - wait_for_trigger:
-              - platform: event
-                event_type: less_push_buttons
-                event_data:
-                  lpb_type: response
-                  occupied: true
-                  target_entity_id: !input "area_state"
-            timeout: "00:00:05"
-            # If no response then the house is still occupied
+          - wait_template: "{{ is_state(occupancy_sensor_id, 'off') }}"
+            timeout: !input "checking_occupancy_wait"
           - choose:
-              - conditions: "{{ not wait.completed }}"
+              - conditions:
+                  - condition: template
+                    value_template: "{{ wait.completed }}"
                 sequence:
                   - service: input_select.select_option
                     data:
                       entity_id: !input "area_state"
-                      option: Occupied
+                      option: Not occupied
             default:
               - service: input_select.select_option
                 data:
                   entity_id: !input "area_state"
-                  option: Not occupied              
+                  option: Occupied          
+    default:
+      - service: input_select.select_option
+        data:
+          entity_id: !input "area_state"
+          option: Checking occupancy
+      - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
+        timeout: !input "checking_occupancy_wait"
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ wait.completed }}"
+            sequence:
+              - service: input_select.select_option
+                data:
+                  entity_id: !input "area_state"
+                  option: Occupied
+        default:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Not occupied  
+                        
