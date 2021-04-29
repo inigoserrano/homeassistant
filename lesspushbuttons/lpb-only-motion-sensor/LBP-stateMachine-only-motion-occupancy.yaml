@@ -47,6 +47,7 @@ trigger:
   - platform: event
     event_type: less_push_buttons
     event_data:
+      lpb_type: notify
       target_entity_id: !input "area_state"
   - platform: state
     entity_id: !input "area_state"
