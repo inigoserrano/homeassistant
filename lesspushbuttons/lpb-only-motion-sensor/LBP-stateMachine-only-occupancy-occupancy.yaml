@@ -112,4 +112,14 @@ action:
                       target_entity_id: !input "area_state"
                       origin_entity_id: !input "area_state"
                       origin_state: Checking occupancy
-
+      - conditions:
+          - "{{ trigger.platform == 'state' }}"
+          - "{{ is_state(area_input_select, 'Occupied') }}"
+        sequence:
+          - event: less_push_buttons
+            event_data:
+              lpb_type: notify
+              occupied: true
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: Occupied
