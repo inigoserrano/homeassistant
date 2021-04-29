@@ -74,13 +74,25 @@ action:
       door_open: "{{ trigger.entity_id == door_entity_id and trigger.to_state.state == 'on' }}"
       temperature_limit_exceeded: "{{ ((states(outdoor_temperature_sensor_id) | float) - ( states(indoor_temperature_sensor_id) | float )) | abs > (temperature_limit_var | float)}}"
 # Less push event
-  - event: less_push_buttons
-    event_data:
-      lpb_type: notify
-      occupied: true
-      target_entity_id: !input "area_state"
-      origin_entity_id: !input "area_state"
-      origin_state: External
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state:
+              - Checking occupancy
+              - Checking occupancy by closure
+              - Checking occupancy by opening
+              - Not occupied and closed
+              - Not occupied and open
+              - Not occupied
+        sequence:
+          - event: less_push_buttons
+            event_data:
+              lpb_type: notify
+              occupied: true
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: External
 # Events and next state
   - choose:
       - conditions:
