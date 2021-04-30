@@ -88,7 +88,6 @@ action:
         sequence:
           - event: less_push_buttons
             event_data:
-              lpb_type: notify
               occupied: true
               target_entity_id: !input "area_state"
               origin_entity_id: !input "area_state"

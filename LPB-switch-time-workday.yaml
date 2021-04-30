@@ -1,6 +1,6 @@
 blueprint:
-  name: LPB - Switch management with time range
-  description: Turn lights on and off with brightness depending of the sun (day/night).
+  name: LPB - Switch management with time range and workdays
+  description: XXXX Turn lights on and off with brightness depending of the sun (day/night).
   domain: automation
   input:
     target_switch:
@@ -16,12 +16,12 @@ blueprint:
           domain: input_select
     start_time:
       name: Start time
-      description: Brightness of the light when turning on in the day, the sun is 'above_horizon'.
+      description: XXXXX Brightness of the light when turning on in the day, the sun is 'above_horizon'.
       selector:
         time:
     end_time:
       name: End time
-      description: Brightness of the light when turning on in the day, the sun is 'above_horizon'.
+      description: XXXXX Brightness of the light when turning on in the day, the sun is 'above_horizon'.
       selector:
         time:
     workday_sensor:
@@ -46,14 +46,13 @@ action:
       - conditions:
           - condition: state
             entity_id: !input "area_state"
-            state: 
+            state:
               - Not occupied and closed
               - Not occupied and open
               - Not occupied
         sequence:
           - service: switch.turn_off
-            entity_id: !input target_switch
+            entity_id: !input "target_switch"
     default:
-      - service: switch.turn_off
-        entity_id: !input switch
-
+      - service: switch.turn_on
+        entity_id: !input "target_switch"
