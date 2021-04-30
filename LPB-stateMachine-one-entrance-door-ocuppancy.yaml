@@ -1,17 +1,28 @@
 blueprint:
   name: LPB - State of room occupancy with only one entrace controlled by a door sensor and a occupancy sensor
-  description: 'This blueprint controls the occupancy of one room with only one entrance using one door sensor and a occupancy sensor.
+  description: '
+  
+  This blueprint controls the occupancy of one room with **only one** entrance using one door sensor and a occupancy sensor.
 
   The state of the room is maintained in an input select, that must exists, with the following items:
-      - Not occupied and closed
-      - Not occupied and open
-      - Occupied and closed
-      - Occupied and open
-      - Checking entry
-      - Checking occupancy by closure
-      - Checking occupancy by opening
+
+      * Not occupied and closed
+
+      * Not occupied and open
+
+      * Occupied and closed
+
+      * Occupied and open
+
+      * Checking entry
+
+      * Checking occupancy by closure
+
+      * Checking occupancy by opening
+
 
   It also checks the rest of the Less Push Buttons ecosystem of automations to complement the occupancy sensor.
+
   '
   domain: automation
   input:
@@ -120,6 +131,7 @@ action:
               entity_id: !input "area_state"
               option: Not occupied and closed
       - conditions:
+          - "{{ trigger.platform == 'event' }}"
           - "{{ trigger.event.data.occupied == true }}"
           - "{{ is_state(area_input_select, 'Not occupied and closed') or is_state(area_input_select, 'Checking occupancy by closure') }}"
           - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
@@ -129,6 +141,7 @@ action:
               entity_id: !input "area_state"
               option: Occupied and closed
       - conditions:
+          - "{{ trigger.platform == 'event' }}"
           - "{{ trigger.event.data.occupied == true }}"
           - "{{ is_state(area_input_select, 'Checking entry') or is_state(area_input_select, 'Not occupied and open') or is_state(area_input_select, 'Occupied and open') or is_state(area_input_select, 'Checking occupancy by opening') }}"
           - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
@@ -138,6 +151,7 @@ action:
               entity_id: !input "area_state"
               option: Occupied and open
       - conditions:
+          - "{{ trigger.platform == 'event' }}"        
           - "{{ trigger.event.data.occupied == false }}"
           - "{{ is_state(area_input_select, 'Checking entry') or is_state(area_input_select, 'Occupied and open') or is_state(area_input_select, 'Checking occupancy by opening') }}"
           - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
@@ -147,6 +161,7 @@ action:
               entity_id: !input "area_state"
               option: Not occupied and open
       - conditions:
+          - "{{ trigger.platform == 'event' }}"        
           - "{{ trigger.event.data.occupied == false }}"
           - "{{ is_state(area_input_select, 'Checking occupancy by closure') }}"
           - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
@@ -163,6 +178,7 @@ action:
           - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
           - event: less_push_buttons
             event_data:
+              lpb_type: notify
               occupied: true
               target_entity_id: !input "area_state"
               origin_entity_id: !input "area_state"
@@ -175,6 +191,7 @@ action:
           - wait_template: "{{ is_state(occupancy_sensor_id, 'on') }}"
           - event: less_push_buttons
             event_data:
+              lpb_type: notify
               occupied: true
               target_entity_id: !input "area_state"
               origin_entity_id: !input "area_state"
@@ -191,6 +208,7 @@ action:
                 for: !input "no_motion_wait"
           - event: less_push_buttons
             event_data:
+              lpb_type: notify
               occupied: false
               target_entity_id: !input "area_state"
               origin_entity_id: !input "area_state"
@@ -209,6 +227,7 @@ action:
                 sequence:
                   - event: less_push_buttons
                     event_data:
+                      lpb_type: notify
                       occupied: false
                       target_entity_id: !input "area_state"
                       origin_entity_id: !input "area_state"
@@ -216,6 +235,7 @@ action:
             default:
               - event: less_push_buttons
                 event_data:
+                  lpb_type: notify
                   occupied: true
                   target_entity_id: !input "area_state"
                   origin_entity_id: !input "area_state"
@@ -234,6 +254,7 @@ action:
                 sequence:
                   - event: less_push_buttons
                     event_data:
+                      lpb_type: notify
                       occupied: true
                       target_entity_id: !input "area_state"
                       origin_entity_id: !input "area_state"
@@ -241,6 +262,7 @@ action:
             default:
               - event: less_push_buttons
                 event_data:
+                  lpb_type: notify
                   occupied: false
                   target_entity_id: !input "area_state"
                   origin_entity_id: !input "area_state"
@@ -259,6 +281,7 @@ action:
                 sequence:
                   - event: less_push_buttons
                     event_data:
+                      lpb_type: notify
                       occupied: false
                       target_entity_id: !input "area_state"
                       origin_entity_id: !input "area_state"
@@ -266,6 +289,7 @@ action:
             default:
               - event: less_push_buttons
                 event_data:
+                  lpb_type: notify
                   occupied: true
                   target_entity_id: !input "area_state"
                   origin_entity_id: !input "area_state"

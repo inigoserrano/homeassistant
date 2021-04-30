@@ -1,6 +1,6 @@
 blueprint:
-  name: LPB - Lights management with day/night brightness
-  description: Turn lights on and off with brightness depending of the sun (day/night).
+  name: LPB - Lights management with day/night temperature and brightness
+  description: Turn lights on and off with brightness and diferents temperature of color depending of the sun (day/night).
   domain: automation
   input:
     target_light:
@@ -25,6 +25,16 @@ blueprint:
           mode: slider
           step: 1.0
           unit_of_measurement: "%"
+    kelvin_day:
+      name: Kelvin temperature of the light during the day
+      description: Kelvin temperature of the light when turning on in the day, the sun is 'above_horizon'.
+      default: 4000
+      selector:
+        number:
+          min: 2000.0
+          max: 5500.0
+          mode: slider
+          step: 100.0
     brightness_night:
       name: Brightness of the light during the night
       description: Brightness of the light when turning on in the night, the sun is 'below_horizon'.
@@ -36,6 +46,16 @@ blueprint:
           mode: slider
           step: 1.0
           unit_of_measurement: "%"
+    kelvin_night:
+      name: Kelvin temperature of the light during the night
+      description: Kelvin temperature of the light when turning on in the night, the sun is 'below_horizon'.
+      default: 2700
+      selector:
+        number:
+          min: 2000.0
+          max: 5500.0
+          mode: slider
+          step: 100.0
 mode: parallel
 trigger:
   - platform: state
@@ -47,13 +67,16 @@ action:
       # Turn off the lights
       - conditions:
           - "{{ is_state(area_input_select, 'Not occupied and closed')
-            or is_state(area_input_select, 'Not occupied and open') }}"
+            or is_state(area_input_select, 'Not occupied and open')
+            or is_state(area_input_select, 'Not occupied') }}"
         sequence:
           - service: light.turn_off
-            entity_id: !input target_light
+            data:
+              entity_id: !input target_light
       # Turn on the lights with parametrization
       - conditions:
-          - "{{ is_state(area_input_select, 'Checking entry') }}"
+          - "{{ is_state(area_input_select, 'Checking entry')
+            or is_state(area_input_select, 'Occupied') }}"
         sequence:
           - choose:
               - conditions:
@@ -62,15 +85,18 @@ action:
                     state: "above_horizon"
                 sequence:
                   - service: light.turn_on
-                    entity_id: !input target_light
                     data:
+                      entity_id: !input target_light
                       brightness_pct: !input brightness_day
+                      kelvin: !input kelvin_day
             default:
               - service: light.turn_on
-                entity_id: !input target_light
                 data:
+                  entity_id: !input target_light
                   brightness_pct: !input brightness_night
+                  kelvin: !input kelvin_night
     # The rest is only turn on the light
     default:
       - service: light.turn_on
-        entity_id: !input target_light
+        data:
+          entity_id: !input target_light
