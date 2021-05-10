@@ -60,7 +60,7 @@ blueprint:
       description: Action to execute when the time and the temperature are exceed
       default: []
       selector:
-        action: {}
+        action: 
 mode: parallel
 trigger:
   - platform: state

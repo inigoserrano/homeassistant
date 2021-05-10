@@ -35,4 +35,3 @@ action:
       target_entity_id: "{{ trigger.event.data.origin_entity_id }}"
       origin_entity_id: !input "area_state"
       origin_state: Query
-      

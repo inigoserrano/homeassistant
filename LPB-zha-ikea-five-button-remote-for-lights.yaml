@@ -47,7 +47,7 @@ blueprint:
         on the remote is pushed and lights turn on.'
       default: false
       selector:
-        boolean: {}
+        boolean:
     brightness:
       name: Brightness
       description: Brightness of the light(s) when turning on
@@ -64,25 +64,25 @@ blueprint:
       description: Action to run on short left button press
       default: []
       selector:
-        action: {}
+        action:
     button_left_long:
       name: Left button - long press
       description: Action to run on long left button press
       default: []
       selector:
-        action: {}
+        action:
     button_right_short:
       name: Right button - short press
       description: Action to run on short right button press
       default: []
       selector:
-        action: {}
+        action:
     button_right_long:
       name: Right button - long press
       description: Action to run on long right button press
       default: []
       selector:
-        action: {}
+        action:
 mode: restart
 max_exceeded: silent
 variables:
