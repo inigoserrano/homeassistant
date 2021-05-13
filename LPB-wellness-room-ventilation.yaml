@@ -80,14 +80,12 @@ action:
             entity_id: !input "area_state"
             state:
               - Checking occupancy
-              - Checking occupancy by closure
-              - Checking occupancy by opening
-              - Not occupied and closed
               - Not occupied and open
               - Not occupied
         sequence:
           - event: less_push_buttons
             event_data:
+              lpb_type: notify
               occupied: true
               target_entity_id: !input "area_state"
               origin_entity_id: !input "area_state"
