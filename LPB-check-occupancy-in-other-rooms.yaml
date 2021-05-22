@@ -13,24 +13,39 @@ blueprint:
       selector:
         entity:
           domain: input_select
-mode: parallel
+mode: restart
 trigger:
-  - platform: event
-    event_type: less_push_buttons
-    event_data:
-      lpb_type: notify
-      occupied: true
-condition:
-  - condition: state
+  - platform: state
     entity_id: !input "area_state"
-    state:
+    to:
       - Checking occupancy
       - Not occupied and open
 action:
-  - event: less_push_buttons
-    event_data:
-      lpb_type: notify
-      occupied: true
-      target_entity_id: !input "area_state"
-      origin_entity_id: !input "area_state"
-      origin_state: External
+  # Query the rest of rooms
+  - wait_for_trigger:
+      - platform: event
+        event_type: less_push_buttons
+        event_data:
+          lpb_type: notify
+          occupied: true
+    timeout: "00:00:10"
+    # If no response then the room is still occupied
+  - choose:
+      - conditions: "{{ wait.completed }}"
+        sequence:
+          - event: less_push_buttons
+            event_data:
+              lpb_type: notify_house
+              occupied: true
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: External
+      - conditions: "{{ not wait.completed }}"
+        sequence:
+          - event: less_push_buttons
+            event_data:
+              lpb_type: notify_house
+              occupied: false
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: External
