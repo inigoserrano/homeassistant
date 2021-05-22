@@ -74,6 +74,9 @@ trigger:
       target_entity_id: !input "area_state"
   - platform: state
     entity_id: !input "area_state"
+  - platform: state
+    entity_id: !input "occupancy_sensor"
+    to: 'on'
 action:
   - variables:
       occupancy_sensor_id: !input "occupancy_sensor"
