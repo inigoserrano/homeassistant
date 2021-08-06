@@ -77,6 +77,8 @@ trigger:
   - platform: state
     entity_id: !input "occupancy_sensor"
     to: 'on'
+  - platform: homeassistant
+    event: start
 action:
   - variables:
       occupancy_sensor_id: !input "occupancy_sensor"
@@ -99,7 +101,26 @@ action:
                         and trigger.to_state.state == 'on' }}" 
       area_state_changed: "{{ trigger.platform == 'state' 
                         and trigger.entity_id == area_input_select }}"
+      homeassistant_started: "{{ trigger.platform == 'homeassistant' }}"
   - choose:
+      - conditions:
+          - "{{ homeassistant_started }}"
+        sequence:
+          - choose:
+              - conditions:
+                  - "{{ is_state(door_entity_id, 'on') }}"
+                sequence:
+                  - service: input_select.select_option
+                    data:
+                      entity_id: !input "area_state"
+                      option: Not occupied and open
+              - conditions:
+                 - "{{ is_state(door_entity_id, 'off') }}"
+                sequence:
+                  - service: input_select.select_option
+                    data:
+                      entity_id: !input "area_state"
+                      option: Not occupied and closed
       - conditions:
           - "{{ door_open }}"
         sequence:
