@@ -81,6 +81,7 @@ trigger:
 action:
   - variables:
       area_input_select: !input "area_state"
+      the_target_light: !input "target_light"
   - choose:
       # Turn off the lights
       - conditions:
@@ -99,8 +100,9 @@ action:
           # Turn on the lights with parametrization
           - choose:
               - conditions:
-                  - "{{ is_state(area_input_select, 'Checking entry')
-                    or is_state(area_input_select, 'Occupied') }}"
+                  - "{{ is_state(the_target_light, 'off') and 
+                        (is_state(area_input_select, 'Checking entry')
+                        or is_state(area_input_select, 'Occupied')) }}"
                 sequence:
                   - choose:
                       - conditions:
