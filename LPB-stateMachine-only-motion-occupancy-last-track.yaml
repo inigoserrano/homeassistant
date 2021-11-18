@@ -1,0 +1,134 @@
+blueprint:
+  name: LPB - State of room occupancy with only motion sensor and last occupied room track
+  description: '
+  
+  This blueprint controls the occupancy of one room with only one motion sensor.
+
+  The state of the room is maintained in an input select, that must exists, with the following items:
+
+      * Not occupied
+
+      * Occupied
+
+      * Checking occupancy
+
+  It also checks the rest of the Less Push Buttons ecosystem of automations to complement the motion sensor.
+
+  '
+  domain: automation
+  input:
+    motion_sensor:
+      name: Motion Sensor
+      description: The motion sensor in the room.
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: motion
+    area_state:
+      name: Area state
+      description: 'Input select that handles the area state.'
+      selector:
+        entity:
+          domain: input_select
+    last_area_occupied:
+      name: Last area occupied
+      description: 'Input select that handles the area last occupied.'
+      selector:
+        entity:
+          domain: input_select
+    no_motion_wait:
+      name: Wait time
+      description: Time to consider not occupied since last motion is detected.
+      default: 60
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+mode: restart
+max_exceeded: silent
+trigger:
+  - platform: state
+    entity_id: !input "motion_sensor"  
+  - platform: event
+    event_type: less_push_buttons
+    event_data:
+      lpb_type: notify
+      target_entity_id: !input "area_state"
+  - platform: state
+    entity_id: !input "area_state"
+action:
+  - variables:
+      motion_sensor_id: !input "motion_sensor"
+      motion_detected: "{{ trigger.entity_id == motion_sensor_id and trigger.to_state.state == 'on' }}"
+      not_motion_detected: "{{ trigger.entity_id == motion_sensor_id and trigger.to_state.state == 'off' }}"
+      area_input_select: !input "area_state"
+      last_area_input_select: !input "last_area_occupied"      
+# Events and next state
+  - choose:
+      - conditions:
+          - "{{ motion_detected }}"
+          - "{{ is_state(area_input_select, 'Not occupied') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Occupied
+      - conditions:
+          - "{{ not_motion_detected }}"
+          - "{{ is_state(area_input_select, 'Occupied') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Checking occupancy
+      - conditions:
+          - "{{ motion_detected }}"
+          - "{{ is_state(area_input_select, 'Checking occupancy') }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Occupied
+      - conditions:
+          - "{{ trigger.platform == 'event' }}"
+          - "{{ trigger.event.data.occupied == false }}"
+          - "{{ is_state(area_input_select, 'Checking occupancy') }}"
+          - "{{ is_state(area_input_select, trigger.event.data.origin_state) and trigger.event.data.origin_entity_id == area_input_select }}"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Not occupied
+# Timeouts
+      - conditions:
+          - condition: state
+            entity_id: !input "area_state"
+            state: Checking occupancy
+        sequence:
+          - wait_template: "{{ is_state(motion_sensor_id, 'on') }}"
+            timeout: !input "no_motion_wait"
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ not wait.completed }}"
+                sequence:
+                  - wait_template: "{{ not is_state(last_area_input_select, area_input_select) }}"
+                  - event: less_push_buttons
+                    event_data:
+                      lpb_type: notify
+                      occupied: false
+                      target_entity_id: !input "area_state"
+                      origin_entity_id: !input "area_state"
+                      origin_state: Checking occupancy
+      - conditions:
+          - "{{ trigger.platform == 'state' }}"
+          - "{{ is_state(area_input_select, 'Occupied') }}"
+        sequence:
+          - event: less_push_buttons
+            event_data:
+              lpb_type: notify
+              occupied: true
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: Occupied
