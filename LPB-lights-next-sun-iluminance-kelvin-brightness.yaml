@@ -91,16 +91,18 @@ action:
       the_target_light: !input "target_light"
       next_area_input_select: !input "next_area_state"
       area_occupied: "{{ is_state(area_input_select, 'Checking entry')
-        or is_state(area_input_select, 'Occupied') 
+        or is_state(area_input_select, 'Occupied')
         or is_state(area_input_select, 'Occupied and closed')
         or is_state(area_input_select, 'Occupied and open')
+        or is_state(area_input_select, 'Checking occupancy')
         or is_state(area_input_select, 'Checking occupancy by closure')
         or is_state(area_input_select, 'Checking occupancy by opening') }}"
       area_not_occupied: "{{ not area_occupied }}"
       next_area_occupied: "{{ is_state(next_area_input_select, 'Checking entry')
-        or is_state(next_area_input_select, 'Occupied') 
+        or is_state(next_area_input_select, 'Occupied')
         or is_state(next_area_input_select, 'Occupied and closed')
         or is_state(next_area_input_select, 'Occupied and open')
+        or is_state(area_input_select, 'Checking occupancy')
         or is_state(next_area_input_select, 'Checking occupancy by closure')
         or is_state(next_area_input_select, 'Checking occupancy by opening') }}"
       next_area_not_occupied: "{{ not next_area_occupied }}"
