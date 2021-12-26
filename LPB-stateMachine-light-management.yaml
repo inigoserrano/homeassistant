@@ -21,9 +21,9 @@ blueprint:
           domain: sensor
           device_class: illuminance
     iluminance_limit:
-      name: Iluminance limit
-      description: Iluminance limit to turn on the lights.
-      default: 100
+      name: Iluminance limit darkness
+      description: Iluminance limit to turn on the reference lights.
+      default: 10
       selector:
         number:
           min: 0
@@ -59,7 +59,8 @@ action:
         sequence:
           - choose:
               - conditions:
-                  - "{{ is_state(light_input_select, 'Light off with insufficient lighting') }}"
+                  - "{{ is_state(light_input_select, 'Light off with insufficient lighting')
+                    or is_state(light_input_select, 'Light off with enough lighting') }}"
                   - condition: numeric_state
                     entity_id: !input "iluminance_sensor"
                     above: !input "iluminance_limit"
@@ -69,7 +70,8 @@ action:
                       entity_id: !input "light_state"
                       option: Light off with enough lighting
               - conditions:
-                  - "{{ is_state(light_input_select, 'Light off with enough lighting') }}"
+                  - "{{ is_state(light_input_select, 'Light off with insufficient lighting')
+                    or is_state(light_input_select, 'Light off with enough lighting') }}"
                   - condition: numeric_state
                     entity_id: !input "iluminance_sensor"
                     below: !input "iluminance_limit"
@@ -143,6 +145,18 @@ action:
                             data:
                               entity_id: !input "light_state"
                               option: Light off with enough lighting
+              - conditions:
+                  - "{{ trigger.event.data.requested == 'reference_light' }}"
+                sequence:
+                  - choose:
+                      - conditions:
+                          - "{{ is_state(light_input_select, 'Light off with insufficient lighting')
+                            or is_state(light_input_select, 'Requested light off with insufficient lighting') }}"
+                        sequence:
+                          - service: input_select.select_option
+                            data:
+                              entity_id: !input "light_state"
+                              option: Reference light
       - conditions:
           - condition: trigger
             id: light_state_changed
