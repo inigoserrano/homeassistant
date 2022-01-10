@@ -1,0 +1,103 @@
+blueprint:
+  name: LPB - State of room occupancy with only occupancy sensor and last occupied room track
+  description: '
+  
+  This blueprint controls the occupancy of one room with only one occupancy sensor.
+
+  The state of the room is maintained in an input select, that must exists, with the following items:
+
+      * Not occupied
+
+      * Occupied
+
+      * Checking occupancy
+
+  It also checks the rest of the Less Push Buttons ecosystem of automations to complement the motion sensor.
+
+  '
+  domain: automation
+  input:
+    motion_sensor:
+      name: Occupancy Sensor
+      description: The occupancy sensor in the room.
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: occupancy
+    area_state:
+      name: Area state
+      description: 'Input select that handles the area state.'
+      selector:
+        entity:
+          domain: input_select
+    last_area_occupied:
+      name: Last area occupied
+      description: 'Input select that handles the area last occupied.'
+      selector:
+        entity:
+          domain: input_select
+    no_motion_wait:
+      name: Wait time
+      description: Time to consider not occupied since last occupancy is detected.
+      default: 60
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+mode: restart
+max_exceeded: silent
+trigger:
+  - platform: state
+    id: "motion_detected"
+    entity_id: !input "motion_sensor"
+    to: "on"
+  - platform: state
+    id: "motion_not_detected"
+    entity_id: !input "motion_sensor"
+    to: "off"
+    for:
+      seconds: !input "no_motion_wait"
+action:
+  - variables:
+      motion_sensor_id: !input "motion_sensor"
+      area_input_select: !input "area_state"
+      last_area_input_select: !input "last_area_occupied"
+# Events and next state
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: motion_detected
+        sequence:
+          - event: less_push_buttons
+            event_data:
+              lpb_type: notify
+              occupied: true
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: Occupied
+          - choose:
+              - conditions:
+                  - "{{ is_state(area_input_select, 'Not occupied') }}"
+                sequence:
+                  - service: input_select.select_option
+                    data:
+                      entity_id: !input "area_state"
+                      option: Occupied
+      - conditions:
+          - condition: trigger
+            id: motion_not_detected
+          - "{{ is_state(area_input_select, 'Occupied') }}"
+        sequence:
+          - wait_template: "{{ not is_state(last_area_input_select, area_input_select) }}"
+          - service: input_select.select_option
+            data:
+              entity_id: !input "area_state"
+              option: Not occupied
+          - event: less_push_buttons
+            event_data:
+              lpb_type: notify
+              occupied: false
+              target_entity_id: !input "area_state"
+              origin_entity_id: !input "area_state"
+              origin_state: Checking occupancy

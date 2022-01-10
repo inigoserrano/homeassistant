@@ -1,0 +1,27 @@
+blueprint:
+  name: LPB - Track last occupied room
+  description: '
+  
+  This blueprint tracks the last occupied room.
+
+  '
+  domain: automation
+  input:
+    area_state:
+      name: Area state
+      description: 'Input select that handles the last area occupied state.'
+      selector:
+        entity:
+          domain: input_select
+mode: restart
+trigger:
+  - platform: event
+    event_type: less_push_buttons
+    event_data:
+      lpb_type: notify
+      occupied: true
+action:
+  - service: input_select.select_option
+    data:
+      entity_id: !input "area_state"
+      option: "{{ trigger.event.data.origin_entity_id }}"
