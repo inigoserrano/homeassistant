@@ -1,0 +1,52 @@
+blueprint:
+  name: LWM - Throw a message for a problem
+  description: '
+  
+  This blueprint controls the anomalous state of a room. Anomalous occupancy is 
+  when the room stay in occupancy state form more than the amount of minutes of 
+  the parameter.
+
+  '
+  domain: automation
+  input:
+    problem_sensor:
+      name: Problem Sensor
+      description: The occupancy sensor in the room.
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: problem
+    problem_level:
+      name: Level of the problem
+      selector:
+        select:
+          options:
+            - Problem
+            - Anomaly
+            - Notify
+    problem_for:
+      name: Maximum time
+      description: Maximum time in occupied state.
+      default: 300
+      selector:
+        number:
+          min: 1
+          max: 900
+          unit_of_measurement: seconds
+mode: single
+trigger:
+  - platform: state
+    entity_id: !input "problem_sensor"
+    from: 'off'
+    to: 'on'
+    for: 
+      seconds: !input "problem_for"
+action:
+  - variables:
+      sensor: !input "problem_sensor"
+      name_of_the_sensor: "{{ state_attr(sensor, 'friendly_name') }}"
+  - event: less_watch_monitors
+    event_data:
+      lwm_type: !input "problem_level"
+      title: "Anomalia en la casa"
+      message: "{{'Hay una anomalia con el sensor ' + name_of_the_sensor }}"

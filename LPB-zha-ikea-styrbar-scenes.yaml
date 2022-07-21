@@ -1,0 +1,143 @@
+blueprint:
+  name: LPB - ZHA - IKEA Styrbar - Custom Actions
+  description:
+    This automation simulates the use of the IKEA Styrbar remote control
+    connected through ZHA.
+  domain: automation
+  input:
+    remote:
+      name: IKEA Styrbar remote control
+      description: Select the remote control you wish to use.
+      selector:
+        device:
+          integration: zha
+          manufacturer: IKEA of Sweden
+          model: Remote Control N2
+    dimup_short:
+      name: Short Press - Dim Up Button
+      description: The action to perform on Short Press of the Dim Up Button
+      default: scene.none
+      selector:
+        entity:
+          domain: scene
+    dimdown_short:
+      name: Short Press - Dim Down Button
+      description: The action to perform on Short Press of the Dim Down Button
+      default: scene.none
+      selector:
+        entity:
+          domain: scene
+    dimup_long:
+      name: Long Press - Dim Up Button
+      description: The action to perform on Long Press of the Dim Up Button
+      default: scene.none
+      selector:
+        entity:
+          domain: scene
+    dimdown_long:
+      name: Long Press - Dim Down Button
+      description: The action to perform on Long Press of the Dim Down Button
+      default: scene.none
+      selector:
+        entity:
+          domain: scene
+    scene_state:
+      name: Scene state
+      description: Input select that handles the scene state.
+      selector:
+        entity:
+          domain: input_select
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_id: !input "remote"
+action:
+  - variables:
+      scene_select: !input "scene_state"
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "on" }}'
+        sequence:
+          - service: input_select.select_option
+            target:
+              entity_id: !input "scene_state"
+            data:
+              option: !input "dimup_short"
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "move_with_on_off" }}'
+        sequence:
+          - service: input_select.select_option
+            target:
+              entity_id: !input "scene_state"
+            data:
+              option: !input "dimup_long"
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "off" }}'
+        sequence:
+          - service: input_select.select_option
+            target:
+              entity_id: !input "scene_state"
+            data:
+              option: !input "dimdown_short"
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "move" }}'
+        sequence:
+          - service: input_select.select_option
+            target:
+              entity_id: !input "scene_state"
+            data:
+              option: !input "dimdown_long"
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "press" }}'
+          - condition: template
+            value_template: "{{ trigger.event.data.args == [256,13,0] }}"
+        sequence:
+          - service: input_select.select_next
+            target:
+              entity_id: !input "scene_state"
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "hold" }}'
+          - condition: template
+            value_template: "{{ trigger.event.data.args == [3328,0] }}"
+        sequence:
+          - service: input_select.select_next
+            target:
+              entity_id: !input "scene_state"
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "press" }}'
+          - condition: template
+            value_template: "{{ trigger.event.data.args == [257,13,0] }}"
+        sequence:
+          - service: input_select.select_previous
+            target:
+              entity_id: !input "scene_state"
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "hold" }}'
+          - condition: template
+            value_template: "{{ trigger.event.data.args == [3329,0] }}"
+        sequence:
+          - service: input_select.select_previous
+            target:
+              entity_id: !input "scene_state"
+    default:
+      - service: input_select.select_option
+        target:
+          entity_id: !input "scene_state"
+        data:
+          option: !input "dimdown_long"
+  - delay:
+      milliseconds: 50
+  - service: scene.turn_on
+    target:
+      entity_id: "{{ states(scene_select) }}"

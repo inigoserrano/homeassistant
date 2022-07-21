@@ -1,5 +1,5 @@
 blueprint:
-  name: LPB - Lights state management
+  name: LPB - Lights management with scences and sensors
   description: This blueprint controls the state of the lights of a room.
   domain: automation
   input:
@@ -7,18 +7,26 @@ blueprint:
       name: Area state
       selector:
         entity:
-          domain: input_select
-    area_dark:
-      name: Area dark
-      description: Sensor darkness of the room.
+          domain: binary_sensor
+          device_class: occupancy
+    area_iluminated:
+      name: Area iluminated
+      description: Sensor iluminate of the room.
       selector:
         entity:
           domain: binary_sensor
+          device_class: light
+    night_mode:
+      name: Night mode
+      description: Night mode.
+      selector:
+        entity:
+          domain: input_boolean
     light_state:
       name: Light state
       selector:
         entity:
-          domain: binary_sensor
+          domain: light
     scene_light_off:
       name: Light off Scene
       description: Scene for ambient state. Will be activated when no motion is detected and light level is under threshold. Default value = scene.none
@@ -46,24 +54,15 @@ trigger:
   - platform: state
     entity_id: !input "area_state"
   - platform: state
-    entity_id: !input "area_dark"
-  - platform: event
-    id: lpb_request_event
-    event_type: less_push_buttons
-    event_data:
-      lpb_type: request
-      target_entity_id: !input "light_state"
+    entity_id: !input "area_iluminated"
 action:
   - variables:
-      area_input_select: !input "area_state"
+      area_occupied_sensor: !input "area_state"
       light_sensor: !input "light_state"
-      darkness_sensor: !input "area_dark"
-      area_not_occupied:
-        "{{ is_state(area_input_select, 'Not occupied and closed')
-        or is_state(area_input_select, 'Not occupied and open')
-        or is_state(area_input_select, 'Not occupied') }}"
-      area_occupied: "{{ not area_not_occupied }}"
-      need_turn_on_light: "{{ is_state(darkness_sensor, 'on')
+      iluminated_sensor: !input "area_iluminated"
+      area_occupied: "{{ is_state(area_occupied_sensor,'on') }}"
+      area_not_occupied: "{{ is_state(area_occupied_sensor,'off') }}"
+      need_turn_on_light: "{{ is_state(iluminated_sensor, 'off')
         and area_occupied
         and is_state(light_sensor, 'off') }}"
       need_turn_off_light: "{{ area_not_occupied
@@ -80,8 +79,8 @@ action:
           - choose:
               - conditions:
                   - condition: state
-                    entity_id: sun.sun
-                    state: "above_horizon"
+                    entity_id: !input "night_mode"
+                    state: "off"
                 sequence:
                   - service: scene.turn_on
                     entity_id: !input scene_day_light
